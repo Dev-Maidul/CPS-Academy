@@ -2,14 +2,18 @@
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useAuth } from '@/app/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 
 export default function CourseDetail() {
   const params = useParams()
   const courseId = params.id
+  const { user } = useAuth()
+  const router = useRouter()
   const [enrolled, setEnrolled] = useState(false)
   const [activeModule, setActiveModule] = useState(0)
 
-  // Mock course data - পরে Strapi থেকে replace করব
+  // Mock course data
   const course = {
     id: 1,
     title: 'Web Development Fundamentals',
@@ -64,8 +68,36 @@ export default function CourseDetail() {
   }
 
   const handleEnroll = () => {
-    setEnrolled(true)
-    // পরে Strapi API call হবে
+    if (!user) {
+      alert('Please login to enroll in this course!')
+      router.push('/login')
+      return
+    }
+
+    if (course.price !== 'Free') {
+      alert(`Redirecting to payment gateway for ${course.title}...`)
+      // Payment integration logic here
+    } else {
+      setEnrolled(true)
+      alert(`Successfully enrolled in ${course.title}!`)
+      // Enrollment API call here
+    }
+  }
+
+  const handleLessonClick = (lessonId) => {
+    if (!user) {
+      alert('Please login to access course content!')
+      router.push('/login')
+      return
+    }
+
+    if (!enrolled) {
+      alert('Please enroll in this course first!')
+      return
+    }
+
+    alert(`Starting lesson ${lessonId}...`)
+    // Lesson playback logic here
   }
 
   const completedLessons = course.modules.flatMap(module => 
@@ -80,7 +112,7 @@ export default function CourseDetail() {
       <div className="container mx-auto px-4">
         {/* Course Header */}
         <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
-          <div className="flex items-start justify-between mb-6">
+          <div className="flex flex-col lg:flex-row gap-8">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-4">
                 <div className="text-5xl">{course.image}</div>
@@ -98,7 +130,7 @@ export default function CourseDetail() {
               <h1 className="text-4xl font-bold text-gray-800 mb-4">{course.title}</h1>
               <p className="text-xl text-gray-600 mb-6">{course.description}</p>
               
-              <div className="flex items-center gap-6 text-sm text-gray-600">
+              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600">
                 <span>👤 {course.instructor}</span>
                 <span>⭐ {course.rating}/5.0</span>
                 <span>👥 {course.students} students</span>
@@ -107,7 +139,7 @@ export default function CourseDetail() {
             </div>
             
             {/* Enrollment Card */}
-            <div className="ml-8 w-80 bg-white border border-gray-200 rounded-xl p-6 sticky top-8">
+            <div className="lg:w-80 w-full bg-white border border-gray-200 rounded-xl p-6 lg:sticky lg:top-8">
               <div className="text-center mb-4">
                 <span className="text-3xl font-bold text-gray-800">{course.price}</span>
                 {course.price === 'Free' && (
@@ -115,7 +147,19 @@ export default function CourseDetail() {
                 )}
               </div>
               
-              {enrolled ? (
+              {!user ? (
+                <div className="space-y-3">
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
+                    <p className="text-yellow-800 text-sm">Please login to enroll</p>
+                  </div>
+                  <Link 
+                    href="/login"
+                    className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition cursor-pointer block text-center"
+                  >
+                    Login to Enroll
+                  </Link>
+                </div>
+              ) : enrolled ? (
                 <div className="space-y-3">
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <div className="flex justify-between text-sm mb-1">
@@ -138,7 +182,7 @@ export default function CourseDetail() {
                   onClick={handleEnroll}
                   className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition cursor-pointer"
                 >
-                  Enroll Now
+                  {course.price === 'Free' ? 'Enroll for Free' : `Enroll for ${course.price}`}
                 </button>
               )}
               
@@ -155,12 +199,18 @@ export default function CourseDetail() {
                   <span className="mr-2">✅</span>
                   <span>Project-based learning</span>
                 </div>
+                {course.price !== 'Free' && (
+                  <div className="flex items-center">
+                    <span className="mr-2">✅</span>
+                    <span>30-day money-back guarantee</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
           
           {/* Course Description */}
-          <div className="prose max-w-none">
+          <div className="prose max-w-none mt-8">
             <h3 className="text-2xl font-semibold mb-4">About This Course</h3>
             <p className="text-gray-700 leading-relaxed">{course.longDescription}</p>
           </div>
@@ -170,15 +220,30 @@ export default function CourseDetail() {
         <div className="bg-white rounded-xl shadow-sm p-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-6">Course Curriculum</h2>
           
+          {/* Access Warning */}
+          {(!user || !enrolled) && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <p className="text-blue-800">
+                {!user 
+                  ? '🔒 Please login to view course content' 
+                  : '🔒 Please enroll in this course to access the lessons'
+                }
+              </p>
+            </div>
+          )}
+          
           <div className="space-y-4">
             {course.modules.map((module, index) => (
               <div key={module.id} className="border border-gray-200 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setActiveModule(activeModule === index ? -1 : index)}
                   className="w-full flex items-center justify-between p-6 bg-gray-50 hover:bg-gray-100 transition cursor-pointer"
+                  disabled={!user || !enrolled}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center w-10 h-10 bg-blue-500 text-white rounded-lg">
+                    <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${
+                      user && enrolled ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-500'
+                    }`}>
                       {index + 1}
                     </div>
                     <div className="text-left">
@@ -203,24 +268,50 @@ export default function CourseDetail() {
                     <p className="text-gray-700 mb-4">{module.description}</p>
                     <div className="space-y-3">
                       {module.lessons.map(lesson => (
-                        <div key={lesson.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition cursor-pointer">
+                        <div 
+                          key={lesson.id} 
+                          onClick={() => handleLessonClick(lesson.id)}
+                          className={`flex items-center justify-between p-3 border rounded-lg transition cursor-pointer ${
+                            user && enrolled
+                              ? lesson.completed 
+                                ? 'border-green-200 bg-green-50 hover:bg-green-100' 
+                                : 'border-gray-200 hover:bg-gray-50'
+                              : 'border-gray-200 bg-gray-100 cursor-not-allowed'
+                          }`}
+                        >
                           <div className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              lesson.completed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
+                              user && enrolled
+                                ? lesson.completed 
+                                  ? 'bg-green-100 text-green-600' 
+                                  : 'bg-blue-100 text-blue-600'
+                                : 'bg-gray-200 text-gray-400'
                             }`}>
                               {lesson.type === 'video' ? '🎥' : '💻'}
                             </div>
                             <div>
-                              <h4 className="font-medium text-gray-800">{lesson.title}</h4>
-                              <p className="text-sm text-gray-600">{lesson.duration}</p>
+                              <h4 className={`font-medium ${
+                                user && enrolled ? 'text-gray-800' : 'text-gray-500'
+                              }`}>
+                                {lesson.title}
+                              </h4>
+                              <p className={`text-sm ${
+                                user && enrolled ? 'text-gray-600' : 'text-gray-400'
+                              }`}>
+                                {lesson.duration}
+                              </p>
                             </div>
                           </div>
-                          {lesson.completed ? (
-                            <span className="text-green-600 text-sm font-medium">Completed</span>
+                          {user && enrolled ? (
+                            lesson.completed ? (
+                              <span className="text-green-600 text-sm font-medium">Completed</span>
+                            ) : (
+                              <button className="text-blue-600 text-sm font-medium hover:text-blue-700 transition cursor-pointer">
+                                Start
+                              </button>
+                            )
                           ) : (
-                            <button className="text-blue-600 text-sm font-medium hover:text-blue-700 transition cursor-pointer">
-                              Start
-                            </button>
+                            <span className="text-gray-400 text-sm">Locked</span>
                           )}
                         </div>
                       ))}

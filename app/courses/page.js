@@ -1,9 +1,11 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function Courses() {
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const { user } = useAuth()
   
   const courses = [
     {
@@ -93,6 +95,22 @@ export default function Courses() {
     ? courses 
     : courses.filter(course => course.category === selectedCategory)
 
+  const handleEnrollClick = (courseId, coursePrice) => {
+    if (!user) {
+      alert('Please login to enroll in this course!')
+      return false
+    }
+    
+    if (coursePrice !== 'Free') {
+      alert(`Redirecting to payment for course ${courseId}...`)
+      // পরে payment integration হবে
+    } else {
+      alert(`Successfully enrolled in course ${courseId}!`)
+      // পরে enrollment API call হবে
+    }
+    return true
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
@@ -103,6 +121,15 @@ export default function Courses() {
             Discover comprehensive programming courses designed for all skill levels. 
             Start your journey to become a professional developer.
           </p>
+          
+          {/* Login Reminder */}
+          {!user && (
+            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 inline-block">
+              <p className="text-yellow-800">
+                🔒 Please <Link href="/login" className="text-blue-600 hover:underline font-semibold">login</Link> to enroll in courses
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Category Filter */}
@@ -125,7 +152,7 @@ export default function Courses() {
         {/* Courses Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {filteredCourses.map(course => (
-            <div key={course.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition cursor-pointer">
+            <div key={course.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-4xl">{course.image}</div>
@@ -149,12 +176,25 @@ export default function Courses() {
                 
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-gray-800">{course.price}</span>
-                  <Link 
-                    href={`/courses/${course.id}`}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition cursor-pointer"
-                  >
-                    View Course
-                  </Link>
+                  <div className="flex gap-2">
+                    <Link 
+                      href={`/courses/${course.id}`}
+                      className="bg-gray-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-600 transition cursor-pointer"
+                    >
+                      View
+                    </Link>
+                    <button 
+                      onClick={() => handleEnrollClick(course.id, course.price)}
+                      className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer ${
+                        user 
+                          ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                      disabled={!user}
+                    >
+                      Enroll
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

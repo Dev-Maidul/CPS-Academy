@@ -10,8 +10,11 @@ export default function Home() {
             Welcome to <span className="text-blue-600">CPS Academy</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Learn programming skills with our comprehensive courses. 
-            Start your journey to become a professional developer today.
+            <strong className='font-semibold text-2xl'>Master Competitive Programming</strong>
+    <br></br>
+            Basic to Intermediate Level - No prerequisite needed
+
+
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 

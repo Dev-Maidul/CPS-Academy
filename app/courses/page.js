@@ -1,114 +1,135 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Courses() {
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [courses, setCourses] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const { user } = useAuth()
   
-  const courses = [
-    {
-      id: 1,
-      title: 'Web Development Fundamentals',
-      description: 'Learn HTML, CSS, JavaScript and build responsive websites',
-      category: 'web',
-      level: 'Beginner',
-      duration: '6 weeks',
-      students: 1250,
-      modules: 8,
-      price: 'Free',
-      image: '🌐'
-    },
-    {
-      id: 2,
-      title: 'React.js Masterclass',
-      description: 'Complete React guide with hooks, context API and projects',
-      category: 'web',
-      level: 'Intermediate',
-      duration: '8 weeks',
-      students: 890,
-      modules: 12,
-      price: '৳3,999',
-      image: '⚛️'
-    },
-    {
-      id: 3,
-      title: 'Python for Data Science',
-      description: 'Python programming with pandas, numpy and data visualization',
-      category: 'data',
-      level: 'Intermediate',
-      duration: '10 weeks',
-      students: 756,
-      modules: 10,
-      price: '৳4,499',
-      image: '🐍'
-    },
-    {
-      id: 4,
-      title: 'Mobile App Development with Flutter',
-      description: 'Build cross-platform mobile apps using Flutter and Dart',
-      category: 'mobile',
-      level: 'Intermediate',
-      duration: '12 weeks',
-      students: 543,
-      modules: 14,
-      price: '৳5,999',
-      image: '📱'
-    },
-    {
-      id: 5,
-      title: 'Database Design & SQL',
-      description: 'Learn database fundamentals, SQL queries and optimization',
-      category: 'database',
-      level: 'Beginner',
-      duration: '5 weeks',
-      students: 987,
-      modules: 6,
-      price: '৳2,499',
-      image: '🗄️'
-    },
-    {
-      id: 6,
-      title: 'DevOps & Cloud Computing',
-      description: 'Docker, Kubernetes, AWS and CI/CD pipeline setup',
-      category: 'devops',
-      level: 'Advanced',
-      duration: '14 weeks',
-      students: 432,
-      modules: 16,
-      price: '৳7,999',
-      image: '☁️'
+  // Fetch courses from Strapi API
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        const response = await fetch('http://localhost:1337/api/courses?populate=*')
+        
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.status}`)
+        }
+        
+        const data = await response.json()
+        
+        if (data.data && Array.isArray(data.data)) {
+          const coursesData = data.data.map(course => ({
+            id: course.id,
+            title: course.title || 'No Title Available',
+            description: course.description || 'No Description Available',
+            category: course.category?.toLowerCase() || 'programming',
+            level: course.level || 'Beginner',
+            duration: course.duration || 'Not Specified',
+            students: course.students || 0,
+            modules: course.modules?.data?.length || 0,
+            price: course.price === '0' || !course.price ? 'Free' : `৳${course.price}`,
+            instructor: course.instructor || 'Instructor Not Set',
+            rating: course.rating || 0,
+            image: '📚'
+          }))
+          setCourses(coursesData)
+        } else {
+          setCourses([])
+        }
+      } catch (error) {
+        console.error('Error fetching courses:', error)
+        setError('Failed to load courses')
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    fetchCourses()
+  }, [])
 
   const categories = [
     { id: 'all', name: 'All Courses' },
+    { id: 'programming', name: 'Programming' },
     { id: 'web', name: 'Web Development' },
     { id: 'data', name: 'Data Science' },
-    { id: 'mobile', name: 'Mobile Development' },
-    { id: 'database', name: 'Database' },
-    { id: 'devops', name: 'DevOps' }
+    { id: 'mobile', name: 'Mobile Development' }
   ]
 
   const filteredCourses = selectedCategory === 'all' 
     ? courses 
     : courses.filter(course => course.category === selectedCategory)
 
-  const handleEnrollClick = (courseId, coursePrice) => {
+  const handleEnrollClick = async (courseId, coursePrice, courseTitle) => {
     if (!user) {
       alert('Please login to enroll in this course!')
       return false
     }
     
-    if (coursePrice !== 'Free') {
-      alert(`Redirecting to payment for course ${courseId}...`)
-      // পরে payment integration হবে
-    } else {
-      alert(`Successfully enrolled in course ${courseId}!`)
-      // পরে enrollment API call হবে
+    try {
+      if (coursePrice !== 'Free') {
+        // Payment integration - redirect to payment page
+        alert(`Redirecting to payment for ${courseTitle}...`)
+        // router.push(`/payment/${courseId}`)
+      } else {
+        // Free course enrollment
+        const enrollmentResponse = await fetch('http://localhost:1337/api/enrollments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            data: {
+              user: user.id,
+              course: courseId,
+              enrolledAt: new Date().toISOString()
+            }
+          })
+        })
+
+        if (enrollmentResponse.ok) {
+          alert(`🎉 Successfully enrolled in ${courseTitle}!`)
+          // Update UI or redirect to course
+        } else {
+          alert('Enrollment failed. Please try again.')
+        }
+      }
+    } catch (error) {
+      console.error('Enrollment error:', error)
+      alert('Enrollment failed. Please try again.')
     }
+    
     return true
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading courses...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">😞</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Connection Error</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -118,18 +139,48 @@ export default function Courses() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">Our Courses</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Discover comprehensive programming courses designed for all skill levels. 
-            Start your journey to become a professional developer.
+            Professional programming courses with hands-on projects and expert guidance
           </p>
           
-          {/* Login Reminder */}
+          <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4 inline-block">
+            <p className="text-green-800">
+              ✅ {courses.length} Professional Courses Available
+            </p>
+          </div>
+
           {!user && (
-            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 inline-block">
-              <p className="text-yellow-800">
-                🔒 Please <Link href="/login" className="text-blue-600 hover:underline font-semibold">login</Link> to enroll in courses
+            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 inline-block">
+              <p className="text-blue-800">
+                🔐 <Link href="/login" className="text-blue-600 hover:underline font-semibold">Login</Link> to enroll in courses and track progress
               </p>
             </div>
           )}
+        </div>
+
+        {/* Professional Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white p-4 rounded-lg text-center shadow-sm">
+            <div className="text-2xl font-bold text-blue-600">{courses.length}</div>
+            <div className="text-sm text-gray-600">Courses</div>
+          </div>
+          <div className="bg-white p-4 rounded-lg text-center shadow-sm">
+            <div className="text-2xl font-bold text-green-600">
+              {courses.filter(c => c.price === 'Free').length}
+            </div>
+            <div className="text-sm text-gray-600">Free Courses</div>
+          </div>
+          <div className="bg-white p-4 rounded-lg text-center shadow-sm">
+            <div className="text-2xl font-bold text-purple-600">
+              {courses.reduce((total, c) => total + c.students, 0)}
+            </div>
+            <div className="text-sm text-gray-600">Total Students</div>
+          </div>
+          <div className="bg-white p-4 rounded-lg text-center shadow-sm">
+            <div className="text-2xl font-bold text-orange-600">
+              {courses.reduce((total, c) => total + c.modules, 0)}
+            </div>
+            <div className="text-sm text-gray-600">Total Modules</div>
+          </div>
         </div>
 
         {/* Category Filter */}
@@ -138,10 +189,10 @@ export default function Courses() {
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
-              className={`px-4 py-2 rounded-full font-medium transition cursor-pointer ${
+              className={`px-6 py-3 rounded-full font-medium transition cursor-pointer ${
                 selectedCategory === category.id
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:shadow-sm'
               }`}
             >
               {category.name}
@@ -149,50 +200,88 @@ export default function Courses() {
           ))}
         </div>
 
-        {/* Courses Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {filteredCourses.map(course => (
-            <div key={course.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition">
+        {/* Professional Courses Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          {filteredCourses.map((course) => (
+            <div key={course.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              {/* Course Image/Banner */}
+              <div className="h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <div className="text-6xl text-white">{course.image}</div>
+              </div>
+              
               <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-4xl">{course.image}</div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    course.level === 'Beginner' ? 'bg-green-100 text-green-800' :
-                    course.level === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {course.level}
-                  </span>
+                {/* Course Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      course.level === 'Beginner' ? 'bg-green-100 text-green-800' :
+                      course.level === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {course.level}
+                    </span>
+                    <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                      {course.category}
+                    </span>
+                  </div>
+                  <div className="flex items-center bg-yellow-100 px-2 py-1 rounded">
+                    <span className="text-yellow-800 text-sm font-semibold">⭐ {course.rating}</span>
+                  </div>
                 </div>
                 
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">{course.title}</h3>
-                <p className="text-gray-600 mb-4 text-sm">{course.description}</p>
+                {/* Course Info */}
+                <h3 className="text-xl font-bold text-gray-800 mb-3 line-clamp-2">{course.title}</h3>
+                <p className="text-gray-600 mb-4 text-sm line-clamp-2">{course.description}</p>
                 
+                {/* Instructor */}
+                <div className="flex items-center mb-4">
+                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-2">
+                    <span className="text-xs">👤</span>
+                  </div>
+                  <span className="text-sm text-gray-600">By {course.instructor}</span>
+                </div>
+                
+                {/* Course Stats */}
                 <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                  <span>📚 {course.modules} modules</span>
-                  <span>⏱️ {course.duration}</span>
-                  <span>👥 {course.students} students</span>
+                  <div className="flex items-center">
+                    <span className="mr-1">📚</span>
+                    <span>{course.modules} Modules</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="mr-1">⏱️</span>
+                    <span>{course.duration}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="mr-1">👥</span>
+                    <span>{course.students}</span>
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-gray-800">{course.price}</span>
+                {/* Price & Actions */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                  <div>
+                    <span className="text-2xl font-bold text-gray-800">{course.price}</span>
+                    {course.price === 'Free' && (
+                      <div className="text-green-600 text-xs font-medium">No payment required</div>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <Link 
                       href={`/courses/${course.id}`}
-                      className="bg-gray-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-600 transition cursor-pointer"
+                      className="bg-gray-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-700 transition cursor-pointer text-sm"
                     >
-                      View
+                      Details
                     </Link>
                     <button 
-                      onClick={() => handleEnrollClick(course.id, course.price)}
-                      className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer ${
+                      onClick={() => handleEnrollClick(course.id, course.price, course.title)}
+                      className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer text-sm ${
                         user 
-                          ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                          ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg' 
                           : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       }`}
                       disabled={!user}
                     >
-                      Enroll
+                      {course.price === 'Free' ? 'Enroll Free' : 'Enroll Now'}
                     </button>
                   </div>
                 </div>
@@ -201,12 +290,27 @@ export default function Courses() {
           ))}
         </div>
 
-        {/* Empty State */}
-        {filteredCourses.length === 0 && (
+        {/* Empty States */}
+        {filteredCourses.length === 0 && courses.length > 0 && (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">😔</div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">No courses found</h3>
-            <p className="text-gray-600">Try selecting a different category</p>
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">No courses found in this category</h3>
+            <p className="text-gray-600">Try selecting a different category or browse all courses</p>
+          </div>
+        )}
+
+        {courses.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">📚</div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">No courses available yet</h3>
+            <p className="text-gray-600 mb-4">We're preparing amazing courses for you</p>
+            <Link 
+              href="http://localhost:1337/admin" 
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition inline-block"
+              target="_blank"
+            >
+              Add Courses in Strapi
+            </Link>
           </div>
         )}
       </div>

@@ -22,8 +22,8 @@ export default function CourseDetail() {
         
         // FIX: Strapi v4 API structure - populate modules and their lessons
         const response = await fetch(
-          `http://localhost:1337/api/courses/${courseId}?populate[modules][populate][lessons]=*`
-        )
+  `http://localhost:1337/api/courses/${courseId}?populate=modules.lessons`
+)
         
         console.log('📡 API Response Status:', response.status)
         

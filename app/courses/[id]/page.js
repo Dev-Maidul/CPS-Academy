@@ -17,43 +17,47 @@ export default function CourseDetail() {
   const [userProgress, setUserProgress] = useState(null)
   const [expandedModules, setExpandedModules] = useState({})
   const [videoLoading, setVideoLoading] = useState(false)
+  const [modules, setModules] = useState([])
+  const [dataSource, setDataSource] = useState('')
 
   useEffect(() => {
     const fetchCourseData = async () => {
       try {
         setLoading(true)
         
-        // Fetch ALL courses and find the one with matching ID
-        const response = await fetch('http://localhost:1337/api/courses')
+        const response = await fetch('http://localhost:1337/api/courses?populate=*')
         
         if (!response.ok) {
-          throw new Error('Failed to fetch courses')
+          throw new Error('Failed to fetch courses from Strapi')
         }
         
         const data = await response.json()
         
-        // Find the specific course by ID
         const allCourses = data.data || data
         const foundCourse = allCourses.find(course => course.id == courseId)
         
         if (foundCourse) {
           setCourse(foundCourse)
           
-          // Check if user is enrolled
+          const courseModules = await loadCourseModules(foundCourse)
+          setModules(courseModules)
+          
           const userEnrollments = JSON.parse(localStorage.getItem('userEnrollments') || '[]')
           const enrollment = userEnrollments.find(e => e.courseId == courseId)
           
           if (enrollment) {
             setIsEnrolled(true)
-            setUserProgress(enrollment)
+            setUserProgress({
+              ...enrollment,
+              completedLessons: enrollment.completedLessons || []
+            })
           }
 
-          // Expand first module by default
-          if (getDemoModules().length > 0) {
-            setExpandedModules({ [getDemoModules()[0].id]: true })
+          if (courseModules.length > 0) {
+            setExpandedModules({ [courseModules[0].id]: true })
           }
         } else {
-          throw new Error(`Course with ID ${courseId} not found`)
+          throw new Error(`Course with ID ${courseId} not found in Strapi`)
         }
         
       } catch (error) {
@@ -69,7 +73,59 @@ export default function CourseDetail() {
     }
   }, [courseId])
 
-  // Professional demo modules with real content
+  const loadCourseModules = async (courseData) => {
+    try {
+      if (courseData.modules && Array.isArray(courseData.modules) && courseData.modules.length > 0) {
+        setDataSource('Strapi')
+        
+        const strapiModules = courseData.modules.map((module, index) => {
+          let lessons = []
+          if (module.lessons && Array.isArray(module.lessons)) {
+            lessons = module.lessons.map(lesson => ({
+              id: lesson.id || Math.random(),
+              title: lesson.title || `Lesson ${lesson.id}`,
+              description: lesson.description || 'No description available',
+              duration: lesson.duration || '15 min',
+              video_url: lesson.video_url || getDefaultVideoUrl(index),
+              content: lesson.content || 'Lesson content coming soon...'
+            }))
+          } else {
+            lessons = getDemoLessonsForModule(module.id || index + 1)
+          }
+          
+          return {
+            id: module.id || index + 1,
+            title: module.title || `Module ${module.id || index + 1}`,
+            description: module.description || 'Module description',
+            duration: module.duration || '1 hour',
+            lessons: lessons
+          }
+        })
+        
+        return strapiModules
+      }
+      
+      setDataSource('Demo')
+      return getDemoModules()
+      
+    } catch (error) {
+      console.error('Error loading modules:', error)
+      setDataSource('Demo (Error)')
+      return getDemoModules()
+    }
+  }
+
+  const getDefaultVideoUrl = (index) => {
+    const videos = [
+      'https://www.youtube.com/embed/_uQrJ0TkZlc',
+      'https://www.youtube.com/embed/jFCNu1-Xdsw',
+      'https://www.youtube.com/embed/ghCbURMWBD8',
+      'https://www.youtube.com/embed/6iF8Xb7Z3wQ',
+      'https://www.youtube.com/embed/ZDa-Z5JzLYM'
+    ]
+    return videos[index] || videos[0]
+  }
+
   const getDemoModules = () => {
     return [
       {
@@ -77,90 +133,76 @@ export default function CourseDetail() {
         title: 'Introduction to Python',
         description: 'Get started with Python programming language',
         duration: '2 hours',
-        lessons: [
-          {
-            id: 1,
-            title: 'What is Python?',
-            description: 'Understanding Python programming language and its applications',
-            duration: '15 min',
-            video_url: 'https://www.youtube.com/embed/_uQrJ0TkZlc',
-            content: 'Python is a high-level, interpreted programming language known for its simplicity and readability.'
-          },
-          {
-            id: 2,
-            title: 'Setting up Environment',
-            description: 'Install Python and setup development environment',
-            duration: '20 min',
-            video_url: 'https://www.youtube.com/embed/jFCNu1-Xdsw',
-            content: 'Learn how to install Python and set up your development environment properly.'
-          },
-          {
-            id: 3,
-            title: 'Your First Python Program',
-            description: 'Write and run your first Python program',
-            duration: '25 min',
-            video_url: 'https://www.youtube.com/embed/khKv-8q7YmY',
-            content: 'Create and execute your first Python script with proper syntax.'
-          }
-        ]
+        lessons: getDemoLessonsForModule(1)
       },
       {
         id: 2,
         title: 'Python Basics',
         description: 'Learn basic Python syntax and concepts',
         duration: '3 hours',
-        lessons: [
-          {
-            id: 4,
-            title: 'Variables and Data Types',
-            description: 'Understanding variables and data types in Python',
-            duration: '30 min',
-            video_url: 'https://www.youtube.com/embed/ghCbURMWBD8',
-            content: 'Learn about variables, strings, numbers, and basic data types in Python.'
-          },
-          {
-            id: 5,
-            title: 'Control Structures',
-            description: 'If statements and loops in Python',
-            duration: '35 min',
-            video_url: 'https://www.youtube.com/embed/6iF8Xb7Z3wQ',
-            content: 'Master if-else statements and different types of loops in Python.'
-          },
-          {
-            id: 6,
-            title: 'Functions and Modules',
-            description: 'Creating functions and using modules',
-            duration: '40 min',
-            video_url: 'https://www.youtube.com/embed/9Os0o3wzS_I',
-            content: 'Learn to create reusable functions and work with Python modules.'
-          }
-        ]
+        lessons: getDemoLessonsForModule(2)
       },
       {
         id: 3,
         title: 'Advanced Python Concepts',
         description: 'Dive deeper into Python programming',
         duration: '4 hours',
-        lessons: [
-          {
-            id: 7,
-            title: 'Object-Oriented Programming',
-            description: 'Classes and objects in Python',
-            duration: '45 min',
-            video_url: 'https://www.youtube.com/embed/ZDa-Z5JzLYM',
-            content: 'Understand classes, objects, inheritance, and polymorphism in Python.'
-          },
-          {
-            id: 8,
-            title: 'File Handling',
-            description: 'Working with files in Python',
-            duration: '30 min',
-            video_url: 'https://www.youtube.com/embed/Uh2ebFW8OYM',
-            content: 'Learn how to read from and write to files using Python.'
-          }
-        ]
+        lessons: getDemoLessonsForModule(3)
       }
     ]
+  }
+
+  const getDemoLessonsForModule = (moduleId) => {
+    const lessonsByModule = {
+      1: [
+        {
+          id: 1,
+          title: 'What is Python?',
+          description: 'Understanding Python programming language and its applications',
+          duration: '15 min',
+          video_url: 'https://www.youtube.com/embed/_uQrJ0TkZlc',
+          content: 'Python is a high-level, interpreted programming language known for its simplicity and readability.'
+        },
+        {
+          id: 2,
+          title: 'Setting up Environment',
+          description: 'Install Python and setup development environment',
+          duration: '20 min',
+          video_url: 'https://www.youtube.com/embed/jFCNu1-Xdsw',
+          content: 'Learn how to install Python and set up your development environment properly.'
+        }
+      ],
+      2: [
+        {
+          id: 3,
+          title: 'Variables and Data Types',
+          description: 'Understanding variables and data types in Python',
+          duration: '30 min',
+          video_url: 'https://www.youtube.com/embed/ghCbURMWBD8',
+          content: 'Learn about variables, strings, numbers, and basic data types in Python.'
+        },
+        {
+          id: 4,
+          title: 'Control Structures',
+          description: 'If statements and loops in Python',
+          duration: '35 min',
+          video_url: 'https://www.youtube.com/embed/6iF8Xb7Z3wQ',
+          content: 'Master if-else statements and different types of loops in Python.'
+        }
+      ],
+      3: [
+        {
+          id: 5,
+          title: 'Object-Oriented Programming',
+          description: 'Classes and objects in Python',
+          duration: '45 min',
+          video_url: 'https://www.youtube.com/embed/ZDa-Z5JzLYM',
+          content: 'Understand classes, objects, inheritance, and polymorphism in Python.'
+        }
+      ]
+    }
+    
+    return lessonsByModule[moduleId] || []
   }
 
   const toggleModule = (moduleId) => {
@@ -182,9 +224,10 @@ export default function CourseDetail() {
       const alreadyEnrolled = userEnrollments.some(enrollment => enrollment.courseId == courseId)
       
       if (!alreadyEnrolled) {
+        const courseTitle = course?.title || course?.attributes?.title || 'Unknown Course'
         const newEnrollment = {
           courseId: courseId,
-          courseTitle: course?.title || 'Unknown Course',
+          courseTitle: courseTitle,
           enrolledAt: new Date().toISOString(),
           progress: 0,
           completedLessons: [],
@@ -194,11 +237,10 @@ export default function CourseDetail() {
         userEnrollments.push(newEnrollment)
         localStorage.setItem('userEnrollments', JSON.stringify(userEnrollments))
         
-        // Add to activity
         const activity = JSON.parse(localStorage.getItem('userActivity') || '[]')
         activity.unshift({
           type: 'course_enrolled',
-          message: `Enrolled in "${course?.title || 'Unknown Course'}"`,
+          message: `Enrolled in "${courseTitle}"`,
           timestamp: new Date().toISOString()
         })
         localStorage.setItem('userActivity', JSON.stringify(activity))
@@ -206,14 +248,12 @@ export default function CourseDetail() {
         setIsEnrolled(true)
         setUserProgress(newEnrollment)
 
-        // Auto-expand first module after enrollment
-        const modules = getDemoModules()
         if (modules.length > 0) {
           setExpandedModules({ [modules[0].id]: true })
         }
       }
       
-      alert(`🎉 Successfully enrolled in ${course?.title || 'the course'}!`)
+      alert(`🎉 Successfully enrolled in ${course?.title || course?.attributes?.title || 'the course'}!`)
       
     } catch (error) {
       console.error('Enrollment error:', error)
@@ -230,7 +270,6 @@ export default function CourseDetail() {
     setSelectedLesson(lesson)
     setVideoLoading(true)
     
-    // Update last accessed
     const userEnrollments = JSON.parse(localStorage.getItem('userEnrollments') || '[]')
     const enrollmentIndex = userEnrollments.findIndex(e => e.courseId == courseId)
     
@@ -254,10 +293,13 @@ export default function CourseDetail() {
     if (enrollmentIndex !== -1) {
       const enrollment = userEnrollments[enrollmentIndex]
       
+      if (!enrollment.completedLessons) {
+        enrollment.completedLessons = []
+      }
+      
       if (!enrollment.completedLessons.includes(lessonId)) {
         enrollment.completedLessons.push(lessonId)
         
-        // Calculate progress
         const totalLessons = getTotalLessons()
         enrollment.progress = totalLessons > 0 ? 
           Math.round((enrollment.completedLessons.length / totalLessons) * 100) : 0
@@ -265,7 +307,6 @@ export default function CourseDetail() {
         localStorage.setItem('userEnrollments', JSON.stringify(userEnrollments))
         setUserProgress(enrollment)
         
-        // Add to activity
         const activity = JSON.parse(localStorage.getItem('userActivity') || '[]')
         const lessonTitle = getLessonTitle(lessonId)
         activity.unshift({
@@ -275,8 +316,7 @@ export default function CourseDetail() {
         })
         localStorage.setItem('userActivity', JSON.stringify(activity))
         
-        // Show success message
-        alert(`✅ "${getLessonTitle(lessonId)}" marked as completed!`)
+        alert(`✅ "${lessonTitle}" marked as completed!`)
       } else {
         alert('This lesson is already completed!')
       }
@@ -289,15 +329,12 @@ export default function CourseDetail() {
       return
     }
 
-    const modules = getDemoModules()
     if (modules.length > 0 && modules[0].lessons.length > 0) {
       const firstLesson = modules[0].lessons[0]
       handleLessonClick(firstLesson)
       
-      // Expand first module
       setExpandedModules({ [modules[0].id]: true })
       
-      // Scroll to lesson section
       setTimeout(() => {
         document.getElementById('lesson-content')?.scrollIntoView({ 
           behavior: 'smooth',
@@ -310,13 +347,12 @@ export default function CourseDetail() {
   const continueLearning = () => {
     if (!isEnrolled) return
 
-    const modules = getDemoModules()
     let nextLesson = null
     
-    // Find first incomplete lesson
     for (const module of modules) {
       for (const lesson of module.lessons) {
-        if (!userProgress?.completedLessons?.includes(lesson.id)) {
+        const isCompleted = userProgress?.completedLessons?.includes(lesson.id) || false
+        if (!isCompleted) {
           nextLesson = lesson
           break
         }
@@ -327,7 +363,6 @@ export default function CourseDetail() {
     if (nextLesson) {
       handleLessonClick(nextLesson)
       
-      // Expand the module containing the next lesson
       const moduleContainingLesson = modules.find(m => 
         m.lessons.some(l => l.id === nextLesson.id)
       )
@@ -335,7 +370,6 @@ export default function CourseDetail() {
         setExpandedModules({ [moduleContainingLesson.id]: true })
       }
       
-      // Scroll to lesson section
       setTimeout(() => {
         document.getElementById('lesson-content')?.scrollIntoView({ 
           behavior: 'smooth',
@@ -348,7 +382,6 @@ export default function CourseDetail() {
   }
 
   const getTotalLessons = () => {
-    const modules = getDemoModules()
     return modules.reduce((total, module) => total + module.lessons.length, 0)
   }
 
@@ -357,7 +390,6 @@ export default function CourseDetail() {
   }
 
   const getLessonTitle = (lessonId) => {
-    const modules = getDemoModules()
     for (const module of modules) {
       for (const lesson of module.lessons) {
         if (lesson.id === lessonId) {
@@ -381,41 +413,9 @@ export default function CourseDetail() {
     alert('Failed to load video. Please check the video URL.')
   }
 
-  // Role-based content rendering
-  const renderRoleSpecificContent = () => {
-    switch(role) {
-      case 'student':
-        return (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-green-800 mb-2">🎓 Student Access</h3>
-            <p className="text-green-700">You have full access to all course materials and videos.</p>
-          </div>
-        )
-      
-      case 'social-media-manager':
-        return (
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-purple-800 mb-2">📊 Social Media Manager View</h3>
-            <p className="text-purple-700">Course Analytics: 1,245 enrollments • 68% completion rate</p>
-          </div>
-        )
-      
-      case 'developer':
-        return (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-blue-800 mb-2">💻 Developer Information</h3>
-            <p className="text-blue-700">Course ID: {courseId} • API: /api/courses</p>
-          </div>
-        )
-      
-      default:
-        return (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-yellow-800 mb-2">🔒 Limited Access</h3>
-            <p className="text-yellow-700">Enroll in the course to access all lessons and materials.</p>
-          </div>
-        )
-    }
+  const getCourseAttributes = () => {
+    if (!course) return {}
+    return course.attributes || course
   }
 
   if (loading) {
@@ -423,7 +423,7 @@ export default function CourseDetail() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-700">Loading course details...</p>
+          <p className="mt-4 text-gray-700">Loading course from Strapi...</p>
           <p className="text-sm text-gray-500 mt-1">Course ID: {courseId}</p>
         </div>
       </div>
@@ -457,7 +457,7 @@ export default function CourseDetail() {
     )
   }
 
-  const modules = getDemoModules()
+  const attributes = getCourseAttributes()
   const completedLessons = getCompletedLessons()
   const totalLessons = getTotalLessons()
   const progress = userProgress?.progress || 0
@@ -465,20 +465,33 @@ export default function CourseDetail() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
-        {/* Course Header */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-yellow-800 mb-2">Debug Information</h3>
+            <p className="text-yellow-700 text-sm">
+              Course ID: {courseId} • Modules: {modules.length} • 
+              Data Source: {dataSource} • 
+              Enrolled: {isEnrolled ? 'Yes' : 'No'}
+            </p>
+            <p className="text-yellow-600 text-xs mt-1">
+              Strapi Modules Found: {course.modules?.length || 0}
+            </p>
+          </div>
+        )}
+
         <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-gray-200">
           <div className="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-8">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    {course.level || 'Beginner'}
+                    {attributes.level || 'Beginner'}
                   </span>
                   <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    {course.price === '0' || !course.price ? 'Free' : `৳${course.price}`}
+                    {attributes.price === '0' || !attributes.price ? 'Free' : `৳${attributes.price}`}
                   </span>
                   <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    ⭐ {course.rating || '4.5'}/5
+                    ⭐ {attributes.rating || '4.5'}/5
                   </span>
                   {isEnrolled && (
                     <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
@@ -487,19 +500,19 @@ export default function CourseDetail() {
                   )}
                 </div>
                 
-                <h1 className="text-3xl lg:text-4xl font-bold mb-4 text-white">{course.title || 'Untitled Course'}</h1>
+                <h1 className="text-3xl lg:text-4xl font-bold mb-4 text-white">{attributes.title || 'Untitled Course'}</h1>
                 <p className="text-blue-100 text-lg lg:text-xl mb-6 leading-relaxed">
-                  {course.description || 'No description available.'}
+                  {attributes.description || 'No description available.'}
                 </p>
                 
                 <div className="flex flex-wrap gap-4 text-blue-100">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">👤</span>
-                    <span className="font-medium">Instructor: {course.instructor || 'Unknown'}</span>
+                    <span className="font-medium">Instructor: {attributes.instructor || 'Unknown'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-lg">⏱️</span>
-                    <span className="font-medium">Duration: {course.duration || 'Not specified'}</span>
+                    <span className="font-medium">Duration: {attributes.duration || 'Not specified'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-lg">📚</span>
@@ -548,13 +561,8 @@ export default function CourseDetail() {
           </div>
         </div>
 
-        {/* Role-based Content */}
-        {renderRoleSpecificContent()}
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Course Content - Left Side */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Progress Section */}
             {isEnrolled && (
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <div className="flex justify-between items-center mb-4">
@@ -569,12 +577,11 @@ export default function CourseDetail() {
                 </div>
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>{completedLessons} of {totalLessons} lessons completed</span>
-                  <span>{Math.round((completedLessons / totalLessons) * 100)}%</span>
+                  <span>{totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0}%</span>
                 </div>
               </div>
             )}
 
-            {/* Modules and Lessons */}
             <div id="lesson-content" className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">Course Curriculum</h2>
@@ -584,120 +591,124 @@ export default function CourseDetail() {
               </div>
 
               <div className="space-y-4">
-                {modules.map((module, moduleIndex) => (
-                  <div key={module.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-300">
-                    {/* Module Header - Clickable */}
-                    <div 
-                      className="bg-gray-50 p-4 border-b border-gray-200 hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
-                      onClick={() => toggleModule(module.id)}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <div className={`transform transition-transform duration-300 ${
-                            expandedModules[module.id] ? 'rotate-90' : ''
-                          }`}>
-                            <span className="text-gray-600">▶</span>
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-800">
-                              Module {moduleIndex + 1}: {module.title}
-                            </h3>
-                            <p className="text-gray-600 text-sm mt-1">
-                              {module.description}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-sm text-gray-500">
-                            {module.lessons.length} lessons • {module.duration}
-                          </div>
-                          <div className="text-gray-400">
-                            {expandedModules[module.id] ? '▲' : '▼'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Lessons List - Collapsible */}
-                    {expandedModules[module.id] && (
-                      <div className="divide-y divide-gray-100 animate-fadeIn">
-                        {module.lessons.map((lesson, lessonIndex) => (
-                          <div 
-                            key={lesson.id}
-                            className={`p-4 hover:bg-gray-50 transition-colors duration-200 cursor-pointer group ${
-                              selectedLesson?.id === lesson.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
-                            }`}
-                            onClick={() => handleLessonClick(lesson)}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div className="flex items-start gap-4 flex-1">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors duration-200 ${
-                                  isLessonCompleted(lesson.id) 
-                                    ? 'bg-green-100 text-green-600 border-2 border-green-300' 
-                                    : 'bg-blue-100 text-blue-600 border-2 border-blue-200 group-hover:border-blue-300'
-                                }`}>
-                                  {isLessonCompleted(lesson.id) ? '✓' : lessonIndex + 1}
-                                </div>
-                                
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h4 className={`font-semibold ${
-                                      isLessonCompleted(lesson.id) 
-                                        ? 'text-green-700' 
-                                        : 'text-gray-800'
-                                    }`}>
-                                      {lesson.title}
-                                    </h4>
-                                    {isLessonCompleted(lesson.id) && (
-                                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
-                                        Completed
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-gray-600 text-sm mb-2 leading-relaxed">
-                                    {lesson.description}
-                                  </p>
-                                  <div className="flex items-center gap-4 text-xs text-gray-500">
-                                    <span className="flex items-center gap-1">
-                                      <span>⏱️</span>
-                                      <span>{lesson.duration}</span>
-                                    </span>
-                                    {lesson.video_url && (
-                                      <span className="flex items-center gap-1">
-                                        <span>🎥</span>
-                                        <span>Video Lesson</span>
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              {isEnrolled && (
-                                <button 
-                                  onClick={(e) => markLessonCompleted(lesson.id, e)}
-                                  className={`px-3 py-1 rounded text-sm font-medium transition-all duration-200 cursor-pointer ml-4 ${
-                                    isLessonCompleted(lesson.id)
-                                      ? 'bg-green-500 hover:bg-green-600 text-white'
-                                      : 'bg-blue-500 hover:bg-blue-600 text-white'
-                                  }`}
-                                >
-                                  {isLessonCompleted(lesson.id) ? 'Completed ✓' : 'Mark Complete'}
-                                </button>
-                              )}
+                {modules.length > 0 ? (
+                  modules.map((module, moduleIndex) => (
+                    <div key={module.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-300">
+                      <div 
+                        className="bg-gray-50 p-4 border-b border-gray-200 hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
+                        onClick={() => toggleModule(module.id)}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-3">
+                            <div className={`transform transition-transform duration-300 ${
+                              expandedModules[module.id] ? 'rotate-90' : ''
+                            }`}>
+                              <span className="text-gray-600">▶</span>
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-800">
+                                Module {moduleIndex + 1}: {module.title}
+                              </h3>
+                              <p className="text-gray-600 text-sm mt-1">
+                                {module.description}
+                              </p>
                             </div>
                           </div>
-                        ))}
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm text-gray-500">
+                              {module.lessons.length} lessons • {module.duration}
+                            </div>
+                            <div className="text-gray-400">
+                              {expandedModules[module.id] ? '▲' : '▼'}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    )}
+                      
+                      {expandedModules[module.id] && (
+                        <div className="divide-y divide-gray-100 animate-fadeIn">
+                          {module.lessons.map((lesson, lessonIndex) => (
+                            <div 
+                              key={lesson.id}
+                              className={`p-4 hover:bg-gray-50 transition-colors duration-200 cursor-pointer group ${
+                                selectedLesson?.id === lesson.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+                              }`}
+                              onClick={() => handleLessonClick(lesson)}
+                            >
+                              <div className="flex justify-between items-start">
+                                <div className="flex items-start gap-4 flex-1">
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors duration-200 ${
+                                    isLessonCompleted(lesson.id) 
+                                      ? 'bg-green-100 text-green-600 border-2 border-green-300' 
+                                      : 'bg-blue-100 text-blue-600 border-2 border-blue-200 group-hover:border-blue-300'
+                                  }`}>
+                                    {isLessonCompleted(lesson.id) ? '✓' : lessonIndex + 1}
+                                  </div>
+                                  
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <h4 className={`font-semibold ${
+                                        isLessonCompleted(lesson.id) 
+                                          ? 'text-green-700' 
+                                          : 'text-gray-800'
+                                      }`}>
+                                        {lesson.title}
+                                      </h4>
+                                      {isLessonCompleted(lesson.id) && (
+                                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                                          Completed
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-gray-600 text-sm mb-2 leading-relaxed">
+                                      {lesson.description}
+                                    </p>
+                                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                                      <span className="flex items-center gap-1">
+                                        <span>⏱️</span>
+                                        <span>{lesson.duration}</span>
+                                      </span>
+                                      {lesson.video_url && (
+                                        <span className="flex items-center gap-1">
+                                          <span>🎥</span>
+                                          <span>Video Lesson</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {isEnrolled && (
+                                  <button 
+                                    onClick={(e) => markLessonCompleted(lesson.id, e)}
+                                    className={`px-3 py-1 rounded text-sm font-medium transition-all duration-200 cursor-pointer ml-4 ${
+                                      isLessonCompleted(lesson.id)
+                                        ? 'bg-green-500 hover:bg-green-600 text-white'
+                                        : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                    }`}
+                                  >
+                                    {isLessonCompleted(lesson.id) ? 'Completed ✓' : 'Mark Complete'}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-6xl mb-4">📚</div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">No Modules Available</h3>
+                    <p className="text-gray-600">Course content is being prepared.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
 
-          {/* Right Sidebar */}
           <div className="space-y-6">
-            {/* Lesson Player/Details */}
             {selectedLesson && (
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <div className="flex items-center gap-2 mb-4">
@@ -705,7 +716,6 @@ export default function CourseDetail() {
                   <h3 className="text-xl font-semibold text-gray-800">Now Playing</h3>
                 </div>
                 
-                {/* Professional Video Player */}
                 <div className="bg-black rounded-lg overflow-hidden mb-4 shadow-lg">
                   {videoLoading && (
                     <div className="aspect-video flex items-center justify-center bg-gray-900">
@@ -754,7 +764,7 @@ export default function CourseDetail() {
                     </div>
                     {isEnrolled && (
                       <button 
-                        onClick={() => markLessonCompleted(selectedLesson.id)}
+                        onClick={(e) => markLessonCompleted(selectedLesson.id, e)}
                         className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer ${
                           isLessonCompleted(selectedLesson.id)
                             ? 'bg-green-500 hover:bg-green-600 text-white'
@@ -769,7 +779,6 @@ export default function CourseDetail() {
               </div>
             )}
 
-            {/* Course Statistics */}
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2 h-6 bg-green-600 rounded-full"></div>
@@ -786,11 +795,11 @@ export default function CourseDetail() {
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-gray-600">Duration</span>
-                  <span className="font-semibold text-gray-800">{course.duration || 'Self-paced'}</span>
+                  <span className="font-semibold text-gray-800">{attributes.duration || 'Self-paced'}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-gray-600">Level</span>
-                  <span className="font-semibold text-gray-800">{course.level || 'Beginner'}</span>
+                  <span className="font-semibold text-gray-800">{attributes.level || 'Beginner'}</span>
                 </div>
                 {isEnrolled && (
                   <div className="flex justify-between items-center py-2">
@@ -801,7 +810,6 @@ export default function CourseDetail() {
               </div>
             </div>
 
-            {/* Quick Actions */}
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2 h-6 bg-purple-600 rounded-full"></div>

@@ -26,32 +26,38 @@ export default function Signup() {
     })
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      const userData = {
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        role: formData.role
-      }
-      
-      await signup(userData)
-      router.push('/dashboard')
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+ const handleSubmit = async (e) => {
+  e.preventDefault()
+  setError('')
+  
+  if (formData.password !== formData.confirmPassword) {
+    setError('Passwords do not match')
+    return
   }
+
+  if (formData.password.length < 6) {
+    setError('Password must be at least 6 characters')
+    return
+  }
+
+  setLoading(true)
+
+  try {
+    const userData = {
+      name: `${formData.firstName} ${formData.lastName}`,
+      email: formData.email,
+      password: formData.password,
+      role: formData.role
+    }
+    
+    await signup(userData)
+    router.push('/dashboard')
+  } catch (err) {
+    setError(err.message)
+  } finally {
+    setLoading(false)
+  }
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 flex items-center justify-center py-12 px-4">

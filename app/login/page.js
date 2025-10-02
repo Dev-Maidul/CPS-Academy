@@ -28,17 +28,28 @@ export default function Login() {
     }
   }
 
+  const handleDemoLogin = async (demoEmail, demoPassword) => {
+    setEmail(demoEmail)
+    setPassword(demoPassword)
+    
+    try {
+      setError('')
+      setLoading(true)
+      await login(demoEmail, demoPassword)
+      router.push('/dashboard')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const demoLogins = [
     { email: 'student@cps.com', password: 'password', role: 'Student', color: 'from-green-500 to-blue-500' },
     { email: 'developer@cps.com', password: 'password', role: 'Developer', color: 'from-purple-500 to-pink-500' },
     { email: 'social@cps.com', password: 'password', role: 'Social Media', color: 'from-blue-500 to-teal-500' },
     { email: 'user@cps.com', password: 'password', role: 'Normal User', color: 'from-gray-500 to-gray-700' }
   ]
-
-  const handleDemoLogin = (demoEmail, demoPassword) => {
-    setEmail(demoEmail)
-    setPassword(demoPassword)
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">

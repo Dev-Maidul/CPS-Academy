@@ -1,19 +1,49 @@
 'use client'
 import Link from 'next/link'
 import { useAuth } from '@/app/contexts/AuthContext'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function Header() {
   const { user, logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const router = useRouter()
 
   const handleLogout = () => {
     logout()
     setIsMenuOpen(false)
+    router.push('/')
   }
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
+  }
+
+  // Get dashboard URL based on user role
+  const getDashboardUrl = () => {
+    if (!user) return '/login'
+    
+    switch (user.role?.toLowerCase()) {
+      case 'student':
+        return '/student-dashboard'
+      case 'normal user':
+      case 'normal':
+        return '/user-dashboard'
+      case 'social media manager':
+      case 'social':
+        return '/social-dashboard'
+      case 'developer':
+        return '/developer-dashboard'
+      default:
+        return '/user-dashboard'
+    }
+  }
+
+  const handleDashboardClick = (e) => {
+    e.preventDefault()
+    const dashboardUrl = getDashboardUrl()
+    router.push(dashboardUrl)
+    setIsMenuOpen(false)
   }
 
   return (
@@ -37,13 +67,18 @@ export default function Header() {
             
             {user ? (
               <div className="flex items-center space-x-6">
-                <span className="text-blue-100 font-medium cursor-default">Hello, {user.name}</span>
-                <Link 
-                  href="/dashboard" 
+                <div className="flex items-center space-x-3">
+                  <span className="text-blue-100 font-medium cursor-default">Hello, {user.name}</span>
+                  <span className="bg-white text-blue-700 px-2 py-1 rounded text-xs font-bold">
+                    {user.role}
+                  </span>
+                </div>
+                <button 
+                  onClick={handleDashboardClick}
                   className="bg-white text-blue-700 px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200 cursor-pointer shadow-sm"
                 >
                   Dashboard
-                </Link>
+                </button>
                 <button 
                   onClick={handleLogout}
                   className="bg-red-500 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-red-600 transition-colors duration-200 cursor-pointer shadow-sm"
@@ -113,14 +148,18 @@ export default function Header() {
             
             {user ? (
               <div className="flex flex-col space-y-4">
-                <span className="text-blue-100 font-medium cursor-default">Hello, {user.name}</span>
-                <Link 
-                  href="/dashboard" 
+                <div className="flex items-center space-x-3">
+                  <span className="text-blue-100 font-medium">Hello, {user.name}</span>
+                  <span className="bg-white text-blue-700 px-2 py-1 rounded text-xs font-bold">
+                    {user.role}
+                  </span>
+                </div>
+                <button 
+                  onClick={handleDashboardClick}
                   className="bg-white text-blue-700 px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200 cursor-pointer text-center"
-                  onClick={() => setIsMenuOpen(false)}
                 >
                   Dashboard
-                </Link>
+                </button>
                 <button 
                   onClick={handleLogout}
                   className="bg-red-500 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-red-600 transition-colors duration-200 cursor-pointer"

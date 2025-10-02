@@ -10,29 +10,34 @@ export default function DashboardRedirect() {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        // If no user, redirect to login
+        console.log('🚫 No user found, redirecting to login')
         router.push('/login')
         return
       }
 
-      // Redirect based on user role
-      switch (user.role?.toLowerCase()) {
+      console.log('🔄 Determining dashboard for role:', user.role)
+      
+      // Redirect based on user role with exact matching
+      switch (user.role) {
         case 'student':
+          console.log('🎯 Redirecting to Student Dashboard')
           router.push('/student-dashboard')
           break
-        case 'normal user':
-        case 'normal':
-          router.push('/user-dashboard')
-          break
-        case 'social media manager':
-        case 'social':
-          router.push('/social-dashboard')
-          break
         case 'developer':
+          console.log('🎯 Redirecting to Developer Dashboard')
           router.push('/developer-dashboard')
           break
+        case 'social':
+          console.log('🎯 Redirecting to Social Dashboard')
+          router.push('/social-dashboard')
+          break
+        case 'normal':
+          console.log('🎯 Redirecting to User Dashboard')
+          router.push('/user-dashboard')
+          break
         default:
-          router.push('/user-dashboard') // Default fallback
+          console.log('⚠️ Unknown role, defaulting to User Dashboard')
+          router.push('/user-dashboard')
       }
     }
   }, [user, loading, router])
@@ -42,6 +47,9 @@ export default function DashboardRedirect() {
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
         <p className="mt-4 text-gray-600">Redirecting to your dashboard...</p>
+        <p className="mt-2 text-sm text-gray-500">
+          Detected role: {user?.role || 'Unknown'}
+        </p>
       </div>
     </div>
   )

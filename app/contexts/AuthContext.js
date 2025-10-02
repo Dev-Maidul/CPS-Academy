@@ -11,39 +11,65 @@ const api = axios.create({
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [token, setToken] = useState(null)
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('cps_user')
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
+    const checkAuthState = () => {
+      try {
+        const savedToken = localStorage.getItem('cps_token')
+        const savedUser = localStorage.getItem('cps_user')
+        
+        if (savedToken && savedUser) {
+          const userData = JSON.parse(savedUser)
+          setUser(userData)
+          setToken(savedToken)
+          api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+        }
+      } catch (error) {
+        console.error('Auth restoration error:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-    setLoading(false)
+
+    checkAuthState()
   }, [])
 
-  // WORKING LOGIN WITH FALLBACK
+  // SIMPLE & WORKING LOGIN - No additional API calls
   const login = async (identifier, password) => {
     try {
       setLoading(true)
-      console.log('🔄 Attempting Strapi login...')
 
-      // Try Strapi login first
+      // Only basic login - no role fetching
       const response = await api.post('/api/auth/local', {
         identifier,
         password,
       })
 
-      console.log('✅ Strapi login successful')
       const { user: userData, jwt } = response.data
     
+      // Simple role mapping based on email (no API calls)
+      const getRoleFromEmail = (email) => {
+        const roleMap = {
+          'student@cps.com': 'student',
+          'developer@cps.com': 'developer',
+          'social@cps.com': 'social', 
+          'user@cps.com': 'normal'
+        }
+        return roleMap[email] || 'normal'
+      }
+
       const userWithRole = {
         id: userData.id,
         username: userData.username,
         email: userData.email,
         name: userData.name || userData.username,
-        role: userData.role?.name || 'student'
+        role: getRoleFromEmail(userData.email)
       }
 
+      // Save to state and localStorage
       setUser(userWithRole)
+      setToken(jwt)
       localStorage.setItem('cps_token', jwt)
       localStorage.setItem('cps_user', JSON.stringify(userWithRole))
       api.defaults.headers.common['Authorization'] = `Bearer ${jwt}`
@@ -51,69 +77,70 @@ export function AuthProvider({ children }) {
       return userWithRole
 
     } catch (error) {
-      console.log('❌ Strapi login failed, using mock data')
+      console.error('Login error:', error)
       
-      // FALLBACK: Use mock data if Strapi fails
-      const mockUsers = {
-        'student@cps.com': { 
-          id: 1, 
-          email: 'student@cps.com', 
-          name: 'John Student', 
-          role: 'student' 
-        },
-        'developer@cps.com': { 
-          id: 2, 
-          email: 'developer@cps.com', 
-          name: 'Jane Developer', 
-          role: 'developer' 
-        },
-        'social@cps.com': { 
-          id: 3, 
-          email: 'social@cps.com', 
-          name: 'Mike Social', 
-          role: 'social' 
-        },
-        'user@cps.com': { 
-          id: 4, 
-          email: 'user@cps.com', 
-          name: 'Sarah User', 
-          role: 'normal' 
-        }
+      let errorMessage = 'Invalid email or password'
+      
+      if (error.response?.data?.error?.message) {
+        errorMessage = error.response.data.error.message
       }
-
-      if (mockUsers[identifier] && password === 'password') {
-        const userData = mockUsers[identifier]
-        setUser(userData)
-        localStorage.setItem('cps_user', JSON.stringify(userData))
-        return userData
-      } else {
-        throw new Error('Invalid email or password')
-      }
+      
+      throw new Error(errorMessage)
     } finally {
       setLoading(false)
     }
   }
 
   const signup = async (userData) => {
-    // Mock signup for now
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const newUser = {
-          id: Date.now(),
-          ...userData,
-          role: userData.role || 'normal'
-        }
-        setUser(newUser)
-        localStorage.setItem('cps_user', JSON.stringify(newUser))
-        resolve(newUser)
-      }, 1000)
-    })
+    try {
+      setLoading(true)
+
+      const signupData = {
+        username: userData.email.split('@')[0],
+        email: userData.email,
+        password: userData.password,
+        name: userData.name,
+      }
+
+      const response = await api.post('/api/auth/local/register', signupData)
+      const { user: newUser, jwt } = response.data
+
+      const userWithRole = {
+        id: newUser.id,
+        username: newUser.username,
+        email: newUser.email,
+        name: newUser.name || newUser.username,
+        role: userData.role || 'normal'
+      }
+
+      setUser(userWithRole)
+      setToken(jwt)
+      localStorage.setItem('cps_token', jwt)
+      localStorage.setItem('cps_user', JSON.stringify(userWithRole))
+      api.defaults.headers.common['Authorization'] = `Bearer ${jwt}`
+
+      return userWithRole
+
+    } catch (error) {
+      console.error('Signup error:', error)
+      let errorMessage = 'Registration failed'
+      
+      if (error.response?.data?.error?.message) {
+        errorMessage = error.response.data.error.message
+      }
+      
+      throw new Error(errorMessage)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem('cps_user')
+    setToken(null)
     localStorage.removeItem('cps_token')
+    localStorage.removeItem('cps_user')
+    delete api.defaults.headers.common['Authorization']
   }
 
   const value = {
@@ -121,7 +148,8 @@ export function AuthProvider({ children }) {
     login,
     signup,
     logout,
-    loading
+    loading,
+    token
   }
 
   return (

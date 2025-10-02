@@ -8,6 +8,11 @@ export default function Header() {
   const { user, logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
+  const [currentPath, setCurrentPath] = useState('')
+
+  useEffect(() => {
+    setCurrentPath(window.location.pathname)
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -46,6 +51,9 @@ export default function Header() {
     setIsMenuOpen(false)
   }
 
+  // Check if current page is a dashboard page
+  const isDashboardPage = currentPath.includes('dashboard')
+
   return (
     <header className="bg-gradient-to-r from-blue-700 via-blue-600 to-purple-600 text-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -73,12 +81,17 @@ export default function Header() {
                     {user.role}
                   </span>
                 </div>
-                <button 
-                  onClick={handleDashboardClick}
-                  className="bg-white text-blue-700 px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200 cursor-pointer shadow-sm"
-                >
-                  Dashboard
-                </button>
+                
+                {/* Show Dashboard button only if NOT on dashboard page */}
+                {!isDashboardPage && (
+                  <button 
+                    onClick={handleDashboardClick}
+                    className="bg-white text-blue-700 px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200 cursor-pointer shadow-sm"
+                  >
+                    Dashboard
+                  </button>
+                )}
+                
                 <button 
                   onClick={handleLogout}
                   className="bg-red-500 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-red-600 transition-colors duration-200 cursor-pointer shadow-sm"
@@ -154,12 +167,17 @@ export default function Header() {
                     {user.role}
                   </span>
                 </div>
-                <button 
-                  onClick={handleDashboardClick}
-                  className="bg-white text-blue-700 px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200 cursor-pointer text-center"
-                >
-                  Dashboard
-                </button>
+                
+                {/* Show Dashboard button only if NOT on dashboard page */}
+                {!isDashboardPage && (
+                  <button 
+                    onClick={handleDashboardClick}
+                    className="bg-white text-blue-700 px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200 cursor-pointer text-center"
+                  >
+                    Dashboard
+                  </button>
+                )}
+                
                 <button 
                   onClick={handleLogout}
                   className="bg-red-500 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-red-600 transition-colors duration-200 cursor-pointer"

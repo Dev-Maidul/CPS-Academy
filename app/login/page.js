@@ -28,14 +28,43 @@ export default function Login() {
     }
   }
 
-  const handleDemoLogin = async (demoEmail, demoPassword) => {
-    setEmail(demoEmail)
-    setPassword(demoPassword)
+  // REAL USER LOGINS - No demo, use actual Strapi users
+  const realUsers = [
+    { 
+      email: 'student@cps.com', 
+      password: 'password', 
+      role: 'Student', 
+      color: 'from-green-500 to-blue-500'
+    },
+    { 
+      email: 'developer@cps.com', 
+      password: 'password', 
+      role: 'Developer', 
+      color: 'from-purple-500 to-pink-500'
+    },
+    { 
+      email: 'social@cps.com', 
+      password: 'password', 
+      role: 'Social Media', 
+      color: 'from-blue-500 to-teal-500'
+    },
+    { 
+      email: 'user@cps.com', 
+      password: 'password', 
+      role: 'Normal User', 
+      color: 'from-gray-500 to-gray-700'
+    }
+  ]
+
+  const handleQuickLogin = async (userEmail, userPassword, userRole) => {
+    setEmail(userEmail)
+    setPassword(userPassword)
     
     try {
       setError('')
       setLoading(true)
-      await login(demoEmail, demoPassword)
+      console.log(`🔄 Logging in as ${userRole}...`)
+      await login(userEmail, userPassword)
       router.push('/dashboard')
     } catch (err) {
       setError(err.message)
@@ -43,13 +72,6 @@ export default function Login() {
       setLoading(false)
     }
   }
-
-  const demoLogins = [
-    { email: 'student@cps.com', password: 'password', role: 'Student', color: 'from-green-500 to-blue-500' },
-    { email: 'developer@cps.com', password: 'password', role: 'Developer', color: 'from-purple-500 to-pink-500' },
-    { email: 'social@cps.com', password: 'password', role: 'Social Media', color: 'from-blue-500 to-teal-500' },
-    { email: 'user@cps.com', password: 'password', role: 'Normal User', color: 'from-gray-500 to-gray-700' }
-  ]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
@@ -101,16 +123,17 @@ export default function Login() {
 
         <div className="mt-8">
           <div className="text-center mb-4">
-            <span className="text-gray-500 text-sm">Quick Demo Login (Use any)</span>
+            <span className="text-gray-500 text-sm">Test Users (Real Strapi Accounts)</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            {demoLogins.map((demo, index) => (
+            {realUsers.map((user, index) => (
               <button
                 key={index}
-                onClick={() => handleDemoLogin(demo.email, demo.password)}
-                className={`bg-gradient-to-r ${demo.color} text-white py-2 px-3 rounded text-xs font-medium hover:opacity-90 transition cursor-pointer`}
+                onClick={() => handleQuickLogin(user.email, user.password, user.role)}
+                className={`bg-gradient-to-r ${user.color} text-white py-2 px-3 rounded text-xs font-medium hover:opacity-90 transition cursor-pointer flex flex-col items-center justify-center`}
               >
-                {demo.role}
+                <span>{user.role}</span>
+                <span className="text-xs opacity-90 mt-1">{user.email}</span>
               </button>
             ))}
           </div>

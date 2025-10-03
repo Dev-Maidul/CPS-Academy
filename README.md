@@ -222,14 +222,15 @@ git push origin feature/AmazingFeature
 
 ## 📞 Contact
 
-**Your Name**  
-**Phone:** [Your Phone Number]  
-**Email:** [Your Email]  
-**GitHub:** [Your GitHub Profile]  
-**LinkedIn:** [Your LinkedIn Profile]  
-**Portfolio:** [Your Portfolio Website]  
+## 📞 Contact
 
-**Project Repository:** https://github.com/Dev-Maidul/CPS-Academy  
-**Live Demo:** [Vercel Deployment Link]  
+**Md Maidul Islam**
 
-
+* Phone: +86 131-6175-0176
+* WhatsApp: +88 01792887606
+* GitHub: [Dev-Maidul](https://github.com/Dev-Maidul)
+* LinkedIn: [maidul-devs](https://www.linkedin.com/in/maidul-devs)
+* Portfolio: [maiduldevs.netlify.app](https://maiduldevs.netlify.app/)
+* Codeforces: [Maidul](https://codeforces.com/profile/Maidul)
+* LeetCode: [Maidul](https://leetcode.com/u/maidulislammanik8991/)
+* Problem-Solving YouTube Playlist: [Watch Here](https://www.youtube.com/watch?v=5ybL99W9Bfk&list=PL-weXfnSsDpwMiW9SaIhspMfgSkoYIa)

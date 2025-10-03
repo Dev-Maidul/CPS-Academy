@@ -76,7 +76,7 @@ export default function Header() {
             {user ? (
               <div className="flex items-center space-x-6">
                 <div className="flex items-center space-x-3">
-                  <span className="text-blue-100 font-medium cursor-default">Hello, {user.name}</span>
+                  {/* <span className="text-blue-100 font-medium cursor-default">Hello, {user.name}</span> */}
                   <span className="bg-white text-blue-700 px-2 py-1 rounded text-xs font-bold">
                     {user.role}
                   </span>
@@ -162,7 +162,7 @@ export default function Header() {
             {user ? (
               <div className="flex flex-col space-y-4">
                 <div className="flex items-center space-x-3">
-                  <span className="text-blue-100 font-medium">Hello, {user.name}</span>
+                  {/* <span className="text-blue-100 font-medium">Hello, </span> */}
                   <span className="bg-white text-blue-700 px-2 py-1 rounded text-xs font-bold">
                     {user.role}
                   </span>

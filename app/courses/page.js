@@ -10,194 +10,8 @@ export default function Courses() {
   const [error, setError] = useState(null)
   const [dataSource, setDataSource] = useState('checking')
   const { user } = useAuth()
-  
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        setDataSource('checking')
-        
-        console.log('🔄 Step 1: Testing Strapi connection...')
-        
-        // ✅ STEP 1: Test basic API connection
-        const testResponse = await fetch('http://localhost:1337/api/courses')
-        console.log('🔍 Strapi Connection Test - Status:', testResponse.status)
-        
-        if (!testResponse.ok) {
-          throw new Error(`Strapi Connection Failed: ${test.response.status}`)
-        }
-        
-        const testData = await testResponse.json()
-        console.log('🔍 Strapi Test Response:', testData)
-        
-        // ✅ STEP 2: Check if courses exist in Strapi
-        if (testData.data && testData.data.length > 0) {
-          console.log('🎯 Courses found in Strapi, fetching detailed data...')
-          setDataSource('strapi')
-          
-          // Fetch courses with thumbnail populate
-          const detailedResponse = await fetch('http://localhost:1337/api/courses?populate=*')
-          const detailedData = await detailedResponse.json()
-          
-          console.log('📊 Detailed Courses Data Structure:', detailedData)
-          console.log('🔍 First course data:', detailedData.data[0])
-          
-          // ✅ SAFE DATA PROCESSING - Handle any Strapi response structure
-          const coursesData = detailedData.data.map((course, index) => {
-            console.log(`📖 Processing course ${index}:`, course)
-            
-            // Safe attribute access
-            const attributes = course.attributes || course || {}
-            const courseId = course.id || index + 1
-            
-            // ✅ SAFE Thumbnail access with multiple fallbacks
-            let thumbnailUrl = null
-            try {
-              // Try different possible thumbnail structures
-              if (attributes.thumbnail?.data?.attributes?.url) {
-                thumbnailUrl = `http://localhost:1337${attributes.thumbnail.data.attributes.url}`
-                console.log(`🖼️ Course ${courseId}: Thumbnail found in thumbnail.data.attributes.url`)
-              } else if (attributes.thumbnail?.url) {
-                thumbnailUrl = `http://localhost:1337${attributes.thumbnail.url}`
-                console.log(`🖼️ Course ${courseId}: Thumbnail found in thumbnail.url`)
-              } else if (attributes.image?.data?.attributes?.url) {
-                thumbnailUrl = `http://localhost:1337${attributes.image.data.attributes.url}`
-                console.log(`🖼️ Course ${courseId}: Thumbnail found in image.data.attributes.url`)
-              } else if (attributes.image?.url) {
-                thumbnailUrl = `http://localhost:1337${attributes.image.url}`
-                console.log(`🖼️ Course ${courseId}: Thumbnail found in image.url`)
-              } else if (attributes.thumbnail) {
-                // If thumbnail is just a string URL
-                thumbnailUrl = attributes.thumbnail
-                console.log(`🖼️ Course ${courseId}: Thumbnail is direct string`)
-              }
-            } catch (thumbError) {
-              console.warn(`⚠️ Thumbnail processing error for course ${courseId}:`, thumbError)
-            }
-            
-            // ✅ SAFE Field access with fallbacks
-            const courseData = {
-              id: courseId,
-              title: attributes.title || `Course ${courseId}`,
-              description: attributes.description || 'No description available',
-              category: (attributes.category?.toLowerCase() || 
-                        attributes.tags?.[0]?.toLowerCase() || 
-                        'programming'),
-              level: attributes.level || attributes.difficulty || 'Beginner',
-              duration: attributes.duration ? 
-                        `${attributes.duration} ${attributes.duration_unit || 'hours'}` : 
-                        (attributes.duration_hours ? `${attributes.duration_hours} hours` : 'Not specified'),
-              students: attributes.students || attributes.enrollments || Math.floor(Math.random() * 500) + 100,
-              modules: attributes.modules_count || 
-                      attributes.modules?.data?.length || 
-                      attributes.modules?.length || 
-                      attributes.lessons_count ||
-                      0,
-              price: attributes.price === 0 || !attributes.price ? 'Free' : `৳${attributes.price}`,
-              instructor: attributes.instructor || 
-                         attributes.teacher || 
-                         attributes.author || 
-                         'CPS Academy',
-              rating: attributes.rating?.toString() || 
-                     attributes.rating_score?.toString() || 
-                     (Math.random() * 1 + 4).toFixed(1),
-              thumbnail: thumbnailUrl,
-              image: thumbnailUrl ? '🖼️' : (attributes.icon || '📚')
-            }
-            
-            console.log(`✅ Processed course ${courseId}:`, courseData)
-            return courseData
-          })
-          
-          setCourses(coursesData)
-          console.log(`✅ Successfully loaded ${coursesData.length} courses from Strapi`)
-          
-        } else {
-          // ✅ STEP 3: No courses in Strapi, use mock data
-          console.log('📝 No courses in Strapi, using mock data')
-          setDataSource('mock')
-          
-          const mockCourses = [
-            {
-              id: 1,
-              title: 'Web Development Fundamentals',
-              description: 'Learn HTML, CSS, JavaScript and modern web development practices from scratch. Build real-world projects and master frontend development.',
-              category: 'web',
-              level: 'Beginner',
-              duration: '48 hours',
-              students: 342,
-              modules: 12,
-              price: 'Free',
-              instructor: 'Sarah Johnson',
-              rating: '4.8',
-              image: '🌐'
-            },
-            {
-              id: 2,
-              title: 'React Masterclass',
-              description: 'Master React.js with hooks, context, and advanced patterns for modern web applications. Learn state management and performance optimization.',
-              category: 'web',
-              level: 'Intermediate',
-              duration: '36 hours',
-              students: 278,
-              modules: 10,
-              price: '৳2500',
-              instructor: 'Mike Chen',
-              rating: '4.9',
-              image: '⚛️'
-            }
-          ]
-          
-          setCourses(mockCourses)
-        }
-        
-      } catch (error) {
-        console.error('❌ Error in course fetching:', error)
-        setDataSource('mock')
-        setError(`Connection Issue: ${error.message}`)
-        
-        // Fallback to mock data
-        const mockCourses = [
-          {
-            id: 1,
-            title: 'Web Development Fundamentals',
-            description: 'Learn web development from scratch with hands-on projects',
-            category: 'web',
-            level: 'Beginner',
-            duration: '8 weeks',
-            students: 342,
-            modules: 12,
-            price: 'Free',
-            instructor: 'CPS Academy',
-            rating: '4.8',
-            image: '🌐'
-          },
-          {
-            id: 2,
-            title: 'React.js Complete Guide',
-            description: 'Master React with modern practices and build real applications',
-            category: 'web', 
-            level: 'Intermediate',
-            duration: '6 weeks',
-            students: 278,
-            modules: 10,
-            price: '৳2500',
-            instructor: 'CPS Academy',
-            rating: '4.9',
-            image: '⚛️'
-          }
-        ]
-        setCourses(mockCourses)
-        
-      } finally {
-        setLoading(false)
-      }
-    }
 
-    fetchCourses()
-  }, [])
-
+  // ✅ Categories array
   const categories = [
     { id: 'all', name: 'All Courses' },
     { id: 'web', name: 'Web Development' },
@@ -206,10 +20,148 @@ export default function Courses() {
     { id: 'programming', name: 'Programming' }
   ]
 
+  // ✅ Helper function to get emoji based on course title
+  const getCourseEmoji = (title) => {
+    if (!title) return '📚'
+    
+    const titleLower = title.toLowerCase()
+    if (titleLower.includes('web') || titleLower.includes('html') || titleLower.includes('css')) return '🌐'
+    if (titleLower.includes('react') || titleLower.includes('javascript')) return '⚛️'
+    if (titleLower.includes('python') || titleLower.includes('data')) return '🐍'
+    if (titleLower.includes('mobile') || titleLower.includes('app')) return '📱'
+    if (titleLower.includes('node') || titleLower.includes('backend')) return '🔧'
+    return '📚'
+  }
+
+  // ✅ Process REAL Strapi data
+  const processStrapiData = (strapiData) => {
+    console.log('🔄 Processing Strapi data...')
+    
+    if (!strapiData.data || !Array.isArray(strapiData.data)) {
+      throw new Error('No valid course data found in Strapi')
+    }
+
+    const coursesData = strapiData.data.map(course => {
+      // ✅ Use direct course data (your Strapi doesn't use attributes)
+      const courseData = course
+      const courseId = course.id
+      
+      // ✅ Get modules data from Strapi
+      let modules = []
+      let totalLessons = 0
+      let modulesData = []
+
+      if (courseData.modules) {
+        if (Array.isArray(courseData.modules.data)) {
+          modules = courseData.modules.data
+        } else if (Array.isArray(courseData.modules)) {
+          modules = courseData.modules
+        }
+      }
+
+      // Process modules if available
+      if (modules && modules.length > 0) {
+        modulesData = modules.map(module => {
+          const moduleData = module.attributes || module
+          let lessons = []
+          
+          if (moduleData.lessons) {
+            if (Array.isArray(moduleData.lessons.data)) {
+              lessons = moduleData.lessons.data
+            } else if (Array.isArray(moduleData.lessons)) {
+              lessons = moduleData.lessons
+            }
+          }
+          
+          totalLessons += lessons.length
+          
+          return {
+            id: module.id,
+            title: moduleData.title || `Module ${module.id}`,
+            description: moduleData.description || '',
+            lessons: lessons.map(lesson => {
+              const lessonData = lesson.attributes || lesson
+              return {
+                id: lesson.id,
+                title: lessonData.title || `Lesson ${lesson.id}`,
+                description: lessonData.content || lessonData.description || '',
+                video_url: lessonData.videoUrl || '',
+                duration: lessonData.duration || lessonData.duration_minutes || 0
+              }
+            })
+          }
+        })
+      }
+
+      // ✅ Use ONLY REAL data from Strapi
+      return {
+        id: courseId,
+        title: courseData.title,
+        description: courseData.description,
+        category: courseData.category ? courseData.category.toLowerCase() : 'programming',
+        level: courseData.level || 'Beginner',
+        duration: courseData.duration ? `${courseData.duration} hours` : 'Not specified',
+        students: courseData.students || 0,
+        modules: modules.length,
+        lessons: totalLessons,
+        price: courseData.price === 0 || !courseData.price ? 'Free' : `৳${courseData.price}`,
+        instructor: courseData.instructor,
+        rating: courseData.rating ? courseData.rating.toString() : '4.5',
+        image: getCourseEmoji(courseData.title),
+        modulesData: modulesData
+      }
+    })
+
+    return coursesData
+  }
+
+  // ✅ Fetch courses from Strapi
+  const fetchCoursesFromStrapi = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      setDataSource('checking')
+      
+      console.log('🚀 Fetching courses from Strapi...')
+      
+      const apiUrl = 'http://localhost:1337/api/courses'
+      const response = await fetch(apiUrl)
+      
+      if (!response.ok) {
+        throw new Error(`Strapi API failed with status: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      if (!data.data || data.data.length === 0) {
+        throw new Error('No courses found in Strapi')
+      }
+
+      const processedCourses = processStrapiData(data)
+      setCourses(processedCourses)
+      setDataSource('strapi')
+      
+      console.log(`✅ Successfully loaded ${processedCourses.length} real courses from Strapi`)
+      
+    } catch (error) {
+      console.error('❌ Error fetching courses:', error)
+      setError(error.message)
+      setDataSource('error')
+      setCourses([]) // Empty array instead of fake data
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchCoursesFromStrapi()
+  }, [])
+
   const filteredCourses = selectedCategory === 'all' 
     ? courses 
     : courses.filter(course => course.category === selectedCategory)
 
+  // ✅ Enrollment function
   const handleEnrollClick = async (courseId, coursePrice, courseTitle) => {
     if (!user) {
       alert('Please login to enroll in this course!')
@@ -258,8 +210,8 @@ export default function Courses() {
         <div className="container mx-auto px-4">
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Loading Courses from Strapi...</h3>
-            <p className="text-gray-600">Processing course data structure</p>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Loading Courses...</h3>
+            <p className="text-gray-600">Fetching real data from Strapi</p>
           </div>
         </div>
       </div>
@@ -283,30 +235,21 @@ export default function Courses() {
                   ✅ Connected to Strapi • {courses.length} Real Courses Loaded
                 </p>
                 <p className="text-green-700 text-sm mt-1">
-                  Data is coming directly from your Strapi backend
+                  Showing actual data from your Strapi backend
                 </p>
               </div>
             )}
-            {dataSource === 'mock' && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 inline-block">
-                <p className="text-blue-800 font-medium">
-                  📝 Using Demo Courses • {courses.length} Courses Available
+            {dataSource === 'error' && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 inline-block">
+                <p className="text-red-800 font-medium">
+                  ❌ Connection Failed • {courses.length} Courses Available
                 </p>
-                <p className="text-blue-700 text-sm mt-1">
-                  Add courses in Strapi Admin to see real data
+                <p className="text-red-700 text-sm mt-1">
+                  {error}
                 </p>
               </div>
             )}
           </div>
-
-          {error && (
-            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 inline-block max-w-2xl">
-              <p className="text-yellow-800 font-semibold">
-                ⚠️ Notice: Using Demo Data
-              </p>
-              <p className="text-yellow-700 text-sm mt-1">{error}</p>
-            </div>
-          )}
 
           {!user && (
             <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 inline-block">
@@ -317,8 +260,10 @@ export default function Courses() {
           )}
         </div>
 
-        {courses.length > 0 && (
+        {/* Show courses if available */}
+        {courses.length > 0 ? (
           <>
+            {/* Categories Filter */}
             <div className="flex flex-wrap justify-center gap-3 mb-8">
               {categories.map(category => (
                 <button
@@ -335,6 +280,7 @@ export default function Courses() {
               ))}
             </div>
 
+            {/* Courses Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
               {filteredCourses.map(course => (
                 <div key={course.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
@@ -368,14 +314,15 @@ export default function Courses() {
                       <span className="text-sm text-gray-600">By {course.instructor}</span>
                     </div>
                     
+                    {/* Modules and Lessons Info */}
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                       <div className="flex items-center">
                         <span className="mr-1">📚</span>
                         <span>{course.modules} Modules</span>
                       </div>
                       <div className="flex items-center">
-                        <span className="mr-1">⏱️</span>
-                        <span>{course.duration}</span>
+                        <span className="mr-1">🎬</span>
+                        <span>{course.lessons} Lessons</span>
                       </div>
                       <div className="flex items-center">
                         <span className="mr-1">👥</span>
@@ -392,16 +339,21 @@ export default function Courses() {
                       </div>
                       <div className="flex gap-2">
                         <Link 
-                          href={`/courses/${course.id}`}
-                          className="bg-gray-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-700 transition cursor-pointer text-sm"
+                          href={{
+                            pathname: `/courses/${course.id}`,
+                            query: { 
+                              courseData: JSON.stringify(course) 
+                            }
+                          }}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition cursor-pointer text-sm"
                         >
-                          Details
+                          View Details
                         </Link>
                         <button 
                           onClick={() => handleEnrollClick(course.id, course.price, course.title)}
                           className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer text-sm ${
                             user 
-                              ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg' 
+                              ? 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg' 
                               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                           }`}
                           disabled={!user}
@@ -415,20 +367,20 @@ export default function Courses() {
               ))}
             </div>
           </>
-        )}
-
-        {/* Debug Information */}
-        {/* {dataSource === 'strapi' && (
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mt-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">🔧 Debug Information</h3>
-            <div className="text-sm text-gray-600 space-y-2">
-              <p><strong>Strapi Integration Status:</strong> ✅ Working</p>
-              <p><strong>Courses Loaded:</strong> {courses.length}</p>
-              <p><strong>API Endpoint:</strong> http://localhost:1337/api/courses?populate=*</p>
-              <p className="text-green-600 font-medium">🎉 Successfully connected to your Strapi backend!</p>
-            </div>
+        ) : (
+          // No courses found
+          <div className="text-center py-20">
+            <div className="text-6xl mb-4">📚</div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">No Courses Available</h3>
+            <p className="text-gray-600 mb-4">{error || 'No courses found in Strapi'}</p>
+            <button 
+              onClick={fetchCoursesFromStrapi}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition"
+            >
+              Try Again
+            </button>
           </div>
-        )} */}
+        )}
       </div>
     </div>
   )

@@ -5,7 +5,7 @@ import axios from 'axios'
 const AuthContext = createContext()
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337',
+  baseURL: process.env.NEXT_PUBLIC_STRAPI_URL || 'https://cheerful-kindness-e070e3dd6b.strapiapp.com',
 })
 
 export function AuthProvider({ children }) {

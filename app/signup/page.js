@@ -45,7 +45,7 @@ export default function Signup() {
 
     try {
       const userData = {
-        name: `${formData.firstName} ${formData.lastName}`,
+        username: `${formData.firstName}${formData.lastName}`.toLowerCase() || formData.email.split('@')[0],
         email: formData.email,
         password: formData.password,
         role: formData.role

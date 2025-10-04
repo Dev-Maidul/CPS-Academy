@@ -289,7 +289,7 @@ export default function CourseDetail() {
     }
   }
 
-  // Render video button with completion options - MOBILE FIXED
+  // Render video button with completion options
   const renderLessonActions = (lesson, moduleTitle) => {
     const progress = getLessonProgress(lesson.id)
     
@@ -297,7 +297,7 @@ export default function CourseDetail() {
       return (
         <button 
           onClick={() => alert('🔐 Please login to access course content')}
-          className="bg-gray-400 text-white px-3 py-2 rounded-lg text-sm transition flex items-center justify-center cursor-not-allowed w-full sm:w-auto"
+          className="bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center justify-center cursor-not-allowed w-full"
           disabled
         >
           <span className="mr-2">🔒</span>
@@ -310,7 +310,7 @@ export default function CourseDetail() {
       return (
         <button 
           onClick={() => alert(`🎓 Upgrade to Student role to access videos\nCurrent role: ${user.role}`)}
-          className="bg-blue-500 text-white px-3 py-2 rounded-lg text-sm transition flex items-center justify-center hover:bg-blue-600 cursor-pointer w-full sm:w-auto"
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center justify-center hover:bg-blue-600 cursor-pointer w-full"
         >
           <span className="mr-2">🎓</span>
           Upgrade to Student
@@ -319,10 +319,10 @@ export default function CourseDetail() {
     }
 
     return (
-      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+      <div className="flex flex-col gap-2 w-full">
         <button 
           onClick={() => handlePlayVideo(lesson, moduleTitle)}
-          className={`px-3 py-2 rounded-lg text-sm transition flex items-center justify-center font-medium cursor-pointer w-full sm:w-auto ${
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center justify-center cursor-pointer w-full ${
             progress.watched 
               ? 'bg-green-500 text-white hover:bg-green-600 shadow-md' 
               : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
@@ -335,7 +335,7 @@ export default function CourseDetail() {
         {!progress.watched ? (
           <button 
             onClick={() => markLessonAsCompleted(lesson.id, true)}
-            className="bg-gray-500 text-white px-3 py-2 rounded-lg text-sm hover:bg-gray-600 transition flex items-center justify-center cursor-pointer w-full sm:w-auto"
+            className="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-600 transition flex items-center justify-center cursor-pointer w-full"
           >
             <span className="mr-2">✅</span>
             Mark Complete
@@ -343,7 +343,7 @@ export default function CourseDetail() {
         ) : (
           <button 
             onClick={() => markLessonAsCompleted(lesson.id, false)}
-            className="bg-yellow-500 text-white px-3 py-2 rounded-lg text-sm hover:bg-yellow-600 transition flex items-center justify-center cursor-pointer w-full sm:w-auto"
+            className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 transition flex items-center justify-center cursor-pointer w-full"
           >
             <span className="mr-2">↶</span>
             Undo
@@ -358,7 +358,7 @@ export default function CourseDetail() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 text-sm sm:text-base">Loading course content...</p>
+          <p className="mt-4 text-gray-600 text-sm">Loading course content...</p>
         </div>
       </div>
     )
@@ -370,102 +370,102 @@ export default function CourseDetail() {
   const allModulesExpanded = course && modules.every(module => expandedModules[courseId]?.[module.id])
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
-      <div className="container mx-auto px-3 sm:px-4 max-w-6xl">
-        {/* Header Section - MOBILE FIXED */}
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 sm:gap-6 mb-4 sm:mb-6">
+    <div className="min-h-screen bg-gray-50 py-6 px-4 sm:py-8 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6">
             <div className="flex-1">
-              <Link href="/courses" className="text-blue-600 hover:underline mb-3 sm:mb-4 inline-block cursor-pointer text-sm sm:text-base">
+              <Link href="/courses" className="text-blue-600 hover:underline mb-4 inline-block text-sm">
                 ← Back to Courses
               </Link>
-              <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
-                <div className="text-3xl sm:text-4xl bg-blue-100 p-3 sm:p-4 rounded-lg self-start">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                <div className="text-4xl bg-blue-100 p-4 rounded-xl self-start">
                   {courseData.thumbnail}
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-xl sm:text-3xl font-bold text-gray-800 mb-2 break-words">{courseData.title}</h1>
-                  <p className="text-gray-600 text-sm sm:text-lg leading-relaxed">{courseData.description}</p>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{courseData.title}</h1>
+                  <p className="text-gray-600 text-base leading-relaxed">{courseData.description}</p>
                 </div>
               </div>
             </div>
             
-            {/* Progress Card - MOBILE FIXED */}
+            {/* Progress Card */}
             {user && (
-              <div className="bg-gradient-to-br from-blue-500 to-purple-600 text-white p-4 sm:p-6 rounded-xl shadow-lg w-full lg:min-w-64 mt-4 sm:mt-0">
-                <h3 className="font-bold text-base sm:text-lg mb-2">Your Progress</h3>
-                <div className="text-2xl sm:text-3xl font-bold mb-3">{courseProgress.percentage}%</div>
-                <div className="w-full bg-blue-400 rounded-full h-2 sm:h-3 mb-3">
+              <div className="bg-gradient-to-br from-blue-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg w-full lg:w-64">
+                <h3 className="font-bold text-lg mb-2">Your Progress</h3>
+                <div className="text-3xl font-bold mb-3">{courseProgress.percentage}%</div>
+                <div className="w-full bg-blue-400 rounded-full h-3 mb-3">
                   <div 
-                    className="bg-white h-2 sm:h-3 rounded-full transition-all duration-500"
+                    className="bg-white h-3 rounded-full transition-all duration-500"
                     style={{ width: `${courseProgress.percentage}%` }}
                   ></div>
                 </div>
-                <p className="text-blue-100 text-xs sm:text-sm">
+                <p className="text-blue-100 text-sm">
                   {courseProgress.completed} of {courseProgress.total} lessons completed
                 </p>
               </div>
             )}
           </div>
 
-          {/* Course Stats - MOBILE FIXED */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-4 sm:mb-6">
-            <div className="text-center p-3 sm:p-4 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition">
-              <div className="text-lg sm:text-2xl font-bold text-blue-600">{modules.length}</div>
-              <div className="text-gray-600 text-xs sm:text-sm">Modules</div>
+          {/* Course Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+            <div className="text-center p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition cursor-default">
+              <div className="text-2xl font-bold text-blue-600">{modules.length}</div>
+              <div className="text-gray-600 text-sm">Modules</div>
             </div>
-            <div className="text-center p-3 sm:p-4 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition">
-              <div className="text-lg sm:text-2xl font-bold text-green-600">{courseProgress.total}</div>
-              <div className="text-gray-600 text-xs sm:text-sm">Lessons</div>
+            <div className="text-center p-4 bg-green-50 rounded-xl hover:bg-green-100 transition cursor-default">
+              <div className="text-2xl font-bold text-green-600">{courseProgress.total}</div>
+              <div className="text-gray-600 text-sm">Lessons</div>
             </div>
-            <div className="text-center p-3 sm:p-4 bg-purple-50 rounded-lg cursor-pointer hover:bg-purple-100 transition">
-              <div className="text-lg sm:text-2xl font-bold text-purple-600">{courseData.duration}</div>
-              <div className="text-gray-600 text-xs sm:text-sm">Hours</div>
+            <div className="text-center p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition cursor-default">
+              <div className="text-2xl font-bold text-purple-600">{courseData.duration}</div>
+              <div className="text-gray-600 text-sm">Hours</div>
             </div>
-            <div className="text-center p-3 sm:p-4 bg-yellow-50 rounded-lg cursor-pointer hover:bg-yellow-100 transition">
-              <div className="text-lg sm:text-2xl font-bold text-yellow-600">{courseData.rating}</div>
-              <div className="text-gray-600 text-xs sm:text-sm">Rating</div>
+            <div className="text-center p-4 bg-yellow-50 rounded-xl hover:bg-yellow-100 transition cursor-default">
+              <div className="text-2xl font-bold text-yellow-600">{courseData.rating}</div>
+              <div className="text-gray-600 text-sm">Rating</div>
             </div>
-            <div className="text-center p-3 sm:p-4 bg-red-50 rounded-lg cursor-pointer hover:bg-red-100 transition col-span-2 sm:col-span-1 lg:col-span-1">
-              <div className="text-lg sm:text-2xl font-bold text-red-600">{courseData.students}</div>
-              <div className="text-gray-600 text-xs sm:text-sm">Students</div>
+            <div className="text-center p-4 bg-red-50 rounded-xl hover:bg-red-100 transition cursor-default">
+              <div className="text-2xl font-bold text-red-600">{courseData.students}</div>
+              <div className="text-gray-600 text-sm">Students</div>
             </div>
           </div>
 
-          {/* Course Meta - MOBILE FIXED */}
-          <div className="flex flex-wrap gap-2">
-            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs cursor-default">
+          {/* Course Meta */}
+          <div className="flex flex-wrap gap-3">
+            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm cursor-default">
               📚 {courseData.category}
             </span>
-            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs cursor-default">
+            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm cursor-default">
               👤 {courseData.instructor}
             </span>
-            <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs cursor-default">
+            <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm cursor-default">
               ⭐ {courseData.rating}/5.0
             </span>
-            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs cursor-default">
+            <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm cursor-default">
               🕒 {courseData.duration} hours
             </span>
-            <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs cursor-default">
+            <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm cursor-default">
               🎯 {courseData.level}
             </span>
           </div>
         </div>
 
-        {/* Course Curriculum - MOBILE FIXED */}
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-6">
+        {/* Course Curriculum */}
+        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Course Curriculum</h2>
-              <p className="text-gray-600 mt-1 text-sm sm:text-base">
+              <h2 className="text-2xl font-bold text-gray-900">Course Curriculum</h2>
+              <p className="text-gray-600 mt-1 text-base">
                 {modules.length} modules • {courseProgress.total} lessons • {courseData.duration} hours
               </p>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <button 
                 onClick={() => toggleAllModules(!allModulesExpanded)}
-                className="bg-gray-500 text-white px-3 py-2 rounded-lg text-sm hover:bg-gray-600 transition cursor-pointer w-full sm:w-auto"
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-600 transition cursor-pointer w-full sm:w-auto"
               >
                 {allModulesExpanded ? 'Collapse All' : 'Expand All'}
               </button>
@@ -479,7 +479,7 @@ export default function CourseDetail() {
                       })
                     })
                   }}
-                  className="bg-green-500 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-600 transition cursor-pointer w-full sm:w-auto"
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition cursor-pointer w-full sm:w-auto"
                 >
                   Mark All Complete
                 </button>
@@ -487,8 +487,8 @@ export default function CourseDetail() {
             </div>
           </div>
 
-          {/* Modules Accordion - MOBILE FIXED */}
-          <div className="space-y-3 sm:space-y-4">
+          {/* Modules Accordion */}
+          <div className="space-y-4">
             {modules.map((module, moduleIndex) => {
               const moduleData = module.attributes
               const lessons = moduleData.lessons.data
@@ -496,33 +496,31 @@ export default function CourseDetail() {
               const isExpanded = expandedModules[courseId]?.[module.id]
               
               return (
-                <div key={module.id} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-all">
-                  {/* Module Header - Clickable - MOBILE FIXED */}
+                <div key={module.id} className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all">
+                  {/* Module Header - Clickable */}
                   <div 
                     className="bg-gray-50 p-4 sm:p-6 hover:bg-gray-100 transition cursor-pointer"
                     onClick={() => toggleModule(module.id)}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 sm:gap-4 flex-1">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0">
-                            <span className="font-bold text-sm sm:text-base">{moduleIndex + 1}</span>
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="text-base sm:text-lg font-semibold text-gray-800 break-words">{moduleData.title}</h3>
-                            <p className="text-gray-600 text-xs sm:text-sm mt-1">{moduleData.description}</p>
-                          </div>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-4 flex-1">
+                        <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="font-bold text-base">{moduleIndex + 1}</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-lg font-semibold text-gray-900 break-words">{moduleData.title}</h3>
+                          <p className="text-gray-600 text-sm mt-1">{moduleData.description}</p>
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-2 sm:gap-4 ml-2">
-                        {/* Progress - MOBILE FIXED */}
+                      <div className="flex items-center gap-4">
+                        {/* Progress */}
                         {user && (
-                          <div className="text-right hidden sm:block">
+                          <div className="text-right hidden sm:block min-w-[100px]">
                             <div className="text-sm text-gray-600">
                               {moduleProgress.completed}/{moduleProgress.total} lessons
                             </div>
-                            <div className="w-20 sm:w-24 bg-gray-200 rounded-full h-2">
+                            <div className="w-24 bg-gray-200 rounded-full h-2 mt-1">
                               <div 
                                 className="bg-green-500 h-2 rounded-full transition-all"
                                 style={{ width: `${moduleProgress.percentage}%` }}
@@ -533,25 +531,25 @@ export default function CourseDetail() {
                         
                         {/* Expand/Collapse Icon */}
                         <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
                         </div>
                       </div>
                     </div>
                     
-                    {/* Mobile Progress - Show only on mobile */}
+                    {/* Mobile Progress */}
                     {user && (
-                      <div className="sm:hidden mt-3 pt-3 border-t border-gray-200">
-                        <div className="flex justify-between items-center">
-                          <div className="text-xs text-gray-600">
+                      <div className="sm:hidden mt-4 pt-4 border-t border-gray-200">
+                        <div className="flex justify-between items-center mb-1">
+                          <div className="text-sm text-gray-600">
                             {moduleProgress.completed}/{moduleProgress.total} lessons completed
                           </div>
-                          <div className="text-xs font-medium text-gray-700">
+                          <div className="text-sm font-medium text-gray-700">
                             {moduleProgress.percentage}%
                           </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                        <div className="w-full bg-gray-200 rounded-full h-2">
                           <div 
                             className="bg-green-500 h-2 rounded-full transition-all"
                             style={{ width: `${moduleProgress.percentage}%` }}
@@ -561,26 +559,26 @@ export default function CourseDetail() {
                     )}
                   </div>
 
-                  {/* Lessons List - Animated Accordion - MOBILE FIXED */}
+                  {/* Lessons List - Animated Accordion */}
                   <div className={`overflow-hidden transition-all duration-300 ${
                     isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
                   }`}>
-                    <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+                    <div className="p-4 space-y-4">
                       {lessons.map((lesson, lessonIndex) => {
                         const lessonData = lesson.attributes
                         const progress = getLessonProgress(lesson.id)
                         
                         return (
-                          <div key={lesson.id} className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-lg border transition-all ${
+                          <div key={lesson.id} className={`flex flex-col md:flex-row items-start md:items-center justify-between p-4 rounded-xl border transition-all gap-4 ${
                             progress.watched 
-                              ? 'bg-green-50 border-green-200' 
+                              ? 'bg-green-50 border-green-200 hover:bg-green-100' 
                               : 'bg-white border-gray-200 hover:bg-blue-50'
                           }`}>
-                            <div className="flex items-start gap-3 sm:gap-4 flex-1 mb-3 sm:mb-0">
-                              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            <div className="flex items-start gap-4 flex-1">
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                                 progress.watched ? 'bg-green-100' : 'bg-blue-100'
                               }`}>
-                                <span className={`font-bold text-xs sm:text-sm ${
+                                <span className={`font-bold text-base ${
                                   progress.watched ? 'text-green-600' : 'text-blue-600'
                                 }`}>
                                   {progress.watched ? '✓' : lessonIndex + 1}
@@ -588,17 +586,17 @@ export default function CourseDetail() {
                               </div>
                               
                               <div className="flex-1 min-w-0">
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-1">
-                                  <h4 className="font-semibold text-gray-800 text-sm sm:text-base break-words">{lessonData.title}</h4>
+                                <div className="flex items-center gap-3 mb-1">
+                                  <h4 className="font-semibold text-gray-900 text-base break-words">{lessonData.title}</h4>
                                   {progress.watched && (
-                                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium self-start sm:self-auto">
+                                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
                                       Completed
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-gray-600 text-xs sm:text-sm mb-2 line-clamp-2">{lessonData.description}</p>
+                                <p className="text-gray-600 text-sm mb-2 line-clamp-2">{lessonData.description}</p>
                                 
-                                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500">
+                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                                   <span className="flex items-center gap-1 whitespace-nowrap">
                                     <span>⏱️</span>
                                     {lessonData.duration} min
@@ -617,7 +615,7 @@ export default function CourseDetail() {
                               </div>
                             </div>
                             
-                            <div className="flex justify-end sm:justify-normal">
+                            <div className="w-full md:w-auto mt-4 md:mt-0">
                               {renderLessonActions(lesson, moduleData.title)}
                             </div>
                           </div>
@@ -631,29 +629,29 @@ export default function CourseDetail() {
           </div>
         </div>
 
-        {/* Video Modal - MOBILE FIXED */}
+        {/* Video Modal */}
         {showVideoModal && selectedLesson && (
-          <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-xl w-full max-w-2xl sm:max-w-4xl mx-auto shadow-2xl max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-start sm:items-center p-4 sm:p-6 border-b bg-gray-50 rounded-t-xl">
-                <div className="flex-1 min-w-0 mr-4">
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-800 break-words">{selectedLesson.attributes.title}</h3>
-                  <p className="text-gray-600 text-sm mt-1">Module: {selectedLesson.moduleTitle}</p>
+          <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl w-full max-w-4xl mx-auto shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center p-6 border-b bg-gray-50 rounded-t-2xl">
+                <div className="flex-1 min-w-0 pr-4">
+                  <h3 className="text-xl font-bold text-gray-900 break-words">{selectedLesson.attributes.title}</h3>
+                  <p className="text-gray-600 text-base mt-1">Module: {selectedLesson.moduleTitle}</p>
                 </div>
                 <button 
                   onClick={() => setShowVideoModal(false)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl bg-white rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-gray-100 cursor-pointer transition flex-shrink-0"
+                  className="text-gray-500 hover:text-gray-700 text-3xl bg-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-100 cursor-pointer transition flex-shrink-0"
                 >
                   ×
                 </button>
               </div>
               
-              <div className="p-4 sm:p-6">
-                <div className="relative bg-black rounded-lg overflow-hidden shadow-lg">
+              <div className="p-6">
+                <div className="relative bg-black rounded-lg overflow-hidden shadow-lg aspect-video">
                   <video 
                     controls 
                     autoPlay
-                    className="w-full h-48 sm:h-80 lg:h-96"
+                    className="w-full h-full"
                     onEnded={() => {
                       markLessonAsCompleted(selectedLesson.id, true)
                       setTimeout(() => {
@@ -666,16 +664,16 @@ export default function CourseDetail() {
                   </video>
                 </div>
                 
-                <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-gray-800 mb-2 sm:mb-3 text-sm sm:text-base">About this lesson</h4>
-                  <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">{selectedLesson.attributes.description}</p>
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-3 text-base">About this lesson</h4>
+                  <p className="text-gray-600 mb-4 text-base">{selectedLesson.attributes.description}</p>
                   
                   {selectedLesson.attributes.resources && selectedLesson.attributes.resources.length > 0 && (
                     <div>
-                      <h5 className="font-semibold text-gray-800 mb-2 text-sm sm:text-base">📚 Learning Resources</h5>
+                      <h5 className="font-semibold text-gray-900 mb-2 text-base">📚 Learning Resources</h5>
                       <div className="flex flex-wrap gap-2">
                         {selectedLesson.attributes.resources.map((resource, index) => (
-                          <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm cursor-default border border-blue-200">
+                          <span key={index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg text-sm cursor-default border border-blue-200">
                             {resource}
                           </span>
                         ))}
@@ -685,13 +683,13 @@ export default function CourseDetail() {
                 </div>
               </div>
 
-              <div className="p-4 sm:p-6 border-t bg-gray-50 rounded-b-xl flex flex-col sm:flex-row justify-between items-center gap-3">
-                <div className="text-green-600 font-medium text-sm sm:text-base">
+              <div className="p-6 border-t bg-gray-50 rounded-b-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="text-green-600 font-medium text-base">
                   ✅ Watching as: {user?.role}
                 </div>
                 <button 
                   onClick={() => setShowVideoModal(false)}
-                  className="bg-blue-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg hover:bg-blue-700 transition cursor-pointer font-medium w-full sm:w-auto text-sm sm:text-base"
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition cursor-pointer font-medium w-full sm:w-auto text-base"
                 >
                   Close Video Player
                 </button>
@@ -700,14 +698,14 @@ export default function CourseDetail() {
           </div>
         )}
 
-        {/* Enrollment CTA - MOBILE FIXED */}
+        {/* Enrollment CTA */}
         {!isStudent() && user && (
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg p-4 sm:p-8 text-white text-center">
-            <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3">Ready to Start Learning?</h3>
-            <p className="text-blue-100 mb-4 sm:mb-6 text-sm sm:text-lg">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-8 text-white text-center">
+            <h3 className="text-2xl font-bold mb-3">Ready to Start Learning?</h3>
+            <p className="text-blue-100 mb-6 text-lg">
               Upgrade to Student role to access all {courseProgress.total} video lessons and track your progress
             </p>
-            <button className="bg-white text-blue-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-bold hover:bg-gray-100 transition cursor-pointer w-full sm:w-auto text-sm sm:text-lg shadow-lg">
+            <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold hover:bg-gray-100 transition cursor-pointer w-full sm:w-auto text-lg shadow-lg">
               Upgrade to Student - {courseData.price === 0 ? 'Free' : `৳${courseData.price}`}
             </button>
           </div>

@@ -68,7 +68,7 @@ export default function Courses() {
       setLoading(true)
       setError(null)
       
-      const response = await fetch('http://localhost:1337/api/courses?populate=modules')
+      const response = await fetch('https://cheerful-kindness-e070e3dd6b.strapiapp.com/api/courses?populate=modules')
       
       if (!response.ok) {
         throw new Error(`Strapi API failed with status: ${response.status}`)
@@ -228,14 +228,14 @@ export default function Courses() {
                     
                     {/* Modules and Lessons Info - ✅ NOW SHOWING ACTUAL MODULE COUNT */}
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                      <div className="flex items-center">
+                      {/* <div className="flex items-center">
                         <span className="mr-1">📚</span>
                         <span>{course.modules} Modules</span>
-                      </div>
-                      <div className="flex items-center">
+                      </div> */}
+                      {/* <div className="flex items-center">
                         <span className="mr-1">🎬</span>
                         <span>{course.lessons} Lessons</span>
-                      </div>
+                      </div> */}
                       <div className="flex items-center">
                         <span className="mr-1">👥</span>
                         <span>{course.students} students</span>

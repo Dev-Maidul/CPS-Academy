@@ -222,8 +222,6 @@ git push origin feature/AmazingFeature
 
 ## 📞 Contact
 
-## 📞 Contact
-
 **Md Maidul Islam**
 
 * Phone: +86 131-6175-0176

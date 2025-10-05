@@ -534,7 +534,7 @@ export default function StudentDashboard() {
                     <span className="text-2xl">📝</span>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">No Pending Assignments</h3>
-                  <p className="text-gray-600">You're all caught up! New assignments will appear here.</p>
+                  <p className="text-gray-600">You are all caught up! New assignments will appear here.</p>
                 </div>
               </div>
             )}
@@ -762,7 +762,7 @@ export default function StudentDashboard() {
                     <span className="text-xl">📝</span>
                   </div>
                   <h3 className="text-base font-semibold text-gray-800 mb-1">No Pending Assignments</h3>
-                  <p className="text-gray-600 text-sm">You're all caught up! New assignments will appear here.</p>
+                  <p className="text-gray-600 text-sm">You are all caught up! New assignments will appear here.</p>
                 </div>
               </div>
             )}

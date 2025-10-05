@@ -104,7 +104,7 @@ export default function UserDashboard() {
       </header>
 
       {/* Navigation Tabs */}
-      <div className="bg-white border-b overflow-x-auto">
+      <div className="bg-white  overflow-x-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-6 sm:space-x-8 min-w-max">
             {['overview', 'courses', 'progress', 'resources'].map((tab) => (

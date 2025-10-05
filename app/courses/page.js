@@ -94,6 +94,7 @@ export default function Courses() {
 
   useEffect(() => {
     fetchCoursesFromStrapi()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const filteredCourses = selectedCategory === 'all' 

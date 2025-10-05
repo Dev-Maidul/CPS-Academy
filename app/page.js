@@ -15,7 +15,7 @@ export default function Home() {
               Master Competitive Programming
             </strong>
             <br />
-            From Beginner to Intermediate - No Prerequisites Needed
+            From Beginner to Advanced - No Prerequisites Needed
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animation-delay-400">
             <Link

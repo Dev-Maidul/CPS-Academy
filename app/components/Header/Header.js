@@ -2,17 +2,19 @@
 import Link from 'next/link'
 import { useAuth } from '@/app/contexts/AuthContext'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 export default function Header() {
   const { user, logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [currentPath, setCurrentPath] = useState('') // Added missing useState
   const router = useRouter()
-  const [currentPath, setCurrentPath] = useState('')
+  const pathname = usePathname() // Use usePathname to get the current path
 
+  // Update currentPath when pathname changes
   useEffect(() => {
-    setCurrentPath(window.location.pathname)
-  }, [])
+    setCurrentPath(pathname)
+  }, [pathname])
 
   const handleLogout = () => {
     logout()
@@ -54,6 +56,20 @@ export default function Header() {
   // Check if current page is a dashboard page
   const isDashboardPage = currentPath.includes('dashboard')
 
+  // Styles for nav links (desktop)
+  const getLinkClass = (href) => {
+    const base = "text-lg font-medium hover:text-blue-100 transition-colors duration-200 cursor-pointer"
+    const active = currentPath === href ? "text-blue-100 font-bold border-b-2 border-blue-100" : ""
+    return `${base} ${active}`
+  }
+
+  // Styles for mobile nav links
+  const getMobileLinkClass = (href) => {
+    const base = "text-lg font-medium hover:text-blue-100 transition-colors duration-200 cursor-pointer"
+    const active = currentPath === href ? "text-blue-100 font-bold" : ""
+    return `${base} ${active}`
+  }
+
   return (
     <header className="bg-gradient-to-r from-blue-700 via-blue-600 to-purple-600 text-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -63,26 +79,24 @@ export default function Header() {
           </Link>
           
           <nav className="hidden md:flex space-x-8 items-center">
-            <Link href="/" className="text-lg font-medium hover:text-blue-100 transition-colors duration-200 cursor-pointer">
+            <Link href="/" className={getLinkClass('/')}>
               Home
             </Link>
-            <Link href="/courses" className="text-lg font-medium hover:text-blue-100 transition-colors duration-200 cursor-pointer">
+            <Link href="/courses" className={getLinkClass('/courses')}>
               Courses
             </Link>
-            <Link href="/about" className="text-lg font-medium hover:text-blue-100 transition-colors duration-200 cursor-pointer">
+            <Link href="/about" className={getLinkClass('/about')}>
               About
             </Link>
             
             {user ? (
               <div className="flex items-center space-x-6">
                 <div className="flex items-center space-x-3">
-                  {/* <span className="text-blue-100 font-medium cursor-default">Hello, {user.name}</span> */}
                   <span className="bg-white text-blue-700 px-2 py-1 rounded text-xs font-bold">
                     {user.role}
                   </span>
                 </div>
                 
-                {/* Show Dashboard button only if NOT on dashboard page */}
                 {!isDashboardPage && (
                   <button 
                     onClick={handleDashboardClick}
@@ -100,8 +114,11 @@ export default function Header() {
                 </button>
               </div>
             ) : (
-              <div className="flex space-x-6">
-                <Link href="/login" className="text-lg font-medium hover:text-blue-100 transition-colors duration-200 cursor-pointer">
+              <div className="flex items-center space-x-6">
+                <Link 
+                  href="/login" 
+                  className={getLinkClass('/login')}
+                >
                   Login
                 </Link>
                 <Link 
@@ -139,21 +156,21 @@ export default function Header() {
           <nav className="flex flex-col space-y-4 py-4">
             <Link 
               href="/" 
-              className="text-lg font-medium hover:text-blue-100 transition-colors duration-200 cursor-pointer"
+              className={getMobileLinkClass('/')}
               onClick={() => setIsMenuOpen(false)}
             >
               Home
             </Link>
             <Link 
               href="/courses" 
-              className="text-lg font-medium hover:text-blue-100 transition-colors duration-200 cursor-pointer"
+              className={getMobileLinkClass('/courses')}
               onClick={() => setIsMenuOpen(false)}
             >
               Courses
             </Link>
             <Link 
               href="/about" 
-              className="text-lg font-medium hover:text-blue-100 transition-colors duration-200 cursor-pointer"
+              className={getMobileLinkClass('/about')}
               onClick={() => setIsMenuOpen(false)}
             >
               About
@@ -162,13 +179,11 @@ export default function Header() {
             {user ? (
               <div className="flex flex-col space-y-4">
                 <div className="flex items-center space-x-3">
-                  {/* <span className="text-blue-100 font-medium">Hello, </span> */}
                   <span className="bg-white text-blue-700 px-2 py-1 rounded text-xs font-bold">
                     {user.role}
                   </span>
                 </div>
                 
-                {/* Show Dashboard button only if NOT on dashboard page */}
                 {!isDashboardPage && (
                   <button 
                     onClick={handleDashboardClick}
@@ -189,7 +204,7 @@ export default function Header() {
               <div className="flex flex-col space-y-4">
                 <Link 
                   href="/login" 
-                  className="text-lg font-medium hover:text-blue-100 transition-colors duration-200 cursor-pointer"
+                  className={getMobileLinkClass('/login')}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Login

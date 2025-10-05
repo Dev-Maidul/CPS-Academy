@@ -4,7 +4,7 @@ import Slider from "./components/slider";
 export default function Home() {
   return (
     <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
-      {/* Hero Section */}
+      {/* Hero Section  */}
       <section className="py-24 px-6 md:px-12">
         <div className="container mx-auto text-center">
           <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 tracking-tight animate-fade-in-up">
@@ -34,7 +34,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Why Choose Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6 md:px-12">
           <h2 className="text-4xl font-extrabold text-center text-gray-900 mb-16 tracking-tight animate-fade-in-up">
@@ -80,12 +80,43 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Slider Section */}
-      <section className="py-20">
-        <h1 className="text-5xl md:text-6xl font-extrabold text-center text-gray-900 mb-12 tracking-tight animate-fade-in-up">
-          Meet Our <span className="text-blue-600">CPS Trainers</span>
-        </h1>
-        <Slider />
+      {/* Meet Our Trainers Section */}
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="container mx-auto px-6 md:px-12">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-center text-gray-900 mb-4 tracking-tight">
+            Meet Our <span className="text-blue-600">Expert Trainers</span>
+          </h2>
+          <p className="text-xl text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+            Learn from the best in the industry with proven track records in competitive programming and software development
+          </p>
+          <Slider />
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-blue-700 via-blue-600 to-purple-600 text-white shadow-lg">
+        <div className="container mx-auto px-6 md:px-12 text-center">
+          <h2 className="text-4xl font-extrabold text-white mb-6">
+            Ready to Start Your Journey?
+          </h2>
+          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Join thousands of students who have transformed their coding skills with CPS Academy
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/signup"
+              className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
+              Get Started Free
+            </Link>
+            <Link
+              href="/courses"
+              className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
+            >
+              Browse Courses
+            </Link>
+          </div>
+        </div>
       </section>
     </div>
   );

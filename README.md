@@ -5,8 +5,7 @@ A sleek, modern, and fully responsive Learning Management System built with Next
 **Next.js** **React** **Tailwind CSS** **Strapi** **Vercel** **Railway**
 
 ## 🚀 Live Demo
-**View Live Demo on Vercel**  
-*[Add your Vercel deployment link here]*
+https://cps-academy-one.vercel.app/
 
 ## ✨ Features
 
